@@ -12,8 +12,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
 
   bool _isPasswordVisible = false;
@@ -35,13 +34,14 @@ class _LoginScreenState extends State<LoginScreen> {
     bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
     if (isLoggedIn && mounted) {
-      // Navigate to home screen (you can replace this with your home screen)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Welcome back! You are already logged in.'),
           backgroundColor: Colors.green,
         ),
       );
+      // Navigate to dashboard automatically if already logged in
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
@@ -70,17 +70,22 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         _showSnackBar('Login successful!', Colors.green);
-        // Navigate to home screen here
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+
+        // Navigate to Dashboard
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        }
       } else {
         _showSnackBar('Invalid email or password', Colors.red);
       }
     } catch (e) {
       _showSnackBar('Login failed: ${e.toString()}', Colors.red);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -121,21 +126,27 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setInt('userId', userId);
 
         _showSnackBar('Account created successfully!', Colors.green);
-        // Navigate to home screen here
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+
+        // Navigate to Dashboard
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        }
       } else {
         _showSnackBar('Email already exists', Colors.red);
       }
     } catch (e) {
       _showSnackBar('Registration failed: ${e.toString()}', Colors.red);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -182,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withAlpha(51),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -202,9 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _isSignUp
-                          ? 'Start Your Adventure'
-                          : 'Your Adventure Starts Here',
+                      _isSignUp ? 'Start Your Adventure' : 'Your Adventure Starts Here',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -239,7 +248,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Name field for signup
                   if (_isSignUp) ...[
                     const Text(
                       'Full Name',
@@ -261,16 +269,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                     ),
                     const SizedBox(height: 20),
                   ],
 
-                  // Email field
                   const Text(
                     'Email Address',
                     style: TextStyle(
@@ -292,15 +296,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     ),
                   ),
                   const SizedBox(height: 20),
 
-                  // Password field
                   const Text(
                     'Password',
                     style: TextStyle(
@@ -322,15 +322,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                           color: Colors.grey[600],
                         ),
                         onPressed: () {
@@ -342,7 +337,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Confirm Password field for signup
                   if (_isSignUp) ...[
                     const SizedBox(height: 20),
                     const Text(
@@ -366,21 +360,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _isConfirmPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
                             color: Colors.grey[600],
                           ),
                           onPressed: () {
                             setState(() {
-                              _isConfirmPasswordVisible =
-                                  !_isConfirmPasswordVisible;
+                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
                             });
                           },
                         ),
@@ -390,7 +378,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Remember me and Forgot password row (only for login)
                   if (!_isSignUp) ...[
                     Row(
                       children: [
@@ -413,11 +400,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Spacer(),
                         TextButton(
                           onPressed: () {
-                            // Handle forgot password
-                            _showSnackBar(
-                              'Forgot password feature coming soon!',
-                              Colors.blue,
-                            );
+                            _showSnackBar('Forgot password feature coming soon!', Colors.blue);
                           },
                           child: const Text(
                             'Forgot password?',
@@ -434,7 +417,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // Sign In/Sign Up button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -452,9 +434,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             )
                           : Text(
                               _isSignUp ? 'Sign Up' : 'Sign In',
@@ -468,12 +448,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Or continue with text
                   Row(
                     children: [
-                      Expanded(
-                        child: Divider(color: Colors.grey[300], thickness: 1),
-                      ),
+                      Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
@@ -484,46 +461,34 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: Divider(color: Colors.grey[300], thickness: 1),
-                      ),
+                      Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
                     ],
                   ),
 
                   const SizedBox(height: 24),
 
-                  // Social login buttons
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            _showSnackBar(
-                              'Google sign-in coming soon!',
-                              Colors.blue,
-                            );
+                            _showSnackBar('Google sign-in coming soon!', Colors.blue);
                           },
                           icon: Image.asset(
-                            'assets/google_icon.png', // Add Google icon to assets
+                            'assets/google_icon.png',
                             width: 20,
                             height: 20,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.g_mobiledata, size: 20);
-                            },
+                            errorBuilder: (_, __, ___) => const Icon(Icons.g_translate),
                           ),
-                          label: const Text(
-                            'Google',
-                            style: TextStyle(
-                              color: Color(0xFF333333),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          label: const Text('Google'),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            foregroundColor: Colors.black,
+                            side: BorderSide(color: Colors.grey[300]!),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            side: BorderSide(color: Colors.grey[300]!),
+                            textStyle: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -531,29 +496,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            _showSnackBar(
-                              'Facebook sign-in coming soon!',
-                              Colors.blue,
-                            );
+                            _showSnackBar('Facebook sign-in coming soon!', Colors.blue);
                           },
-                          icon: const Icon(
-                            Icons.facebook,
-                            color: Color(0xFF1877F2),
-                            size: 20,
+                          icon: Image.asset(
+                            'assets/facebook_icon.png',
+                            width: 20,
+                            height: 20,
+                            errorBuilder: (_, __, ___) => const Icon(Icons.facebook),
                           ),
-                          label: const Text(
-                            'Facebook',
-                            style: TextStyle(
-                              color: Color(0xFF333333),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          label: const Text('Facebook'),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            foregroundColor: Colors.black,
+                            side: BorderSide(color: Colors.grey[300]!),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            side: BorderSide(color: Colors.grey[300]!),
+                            textStyle: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -562,33 +521,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Toggle between login and signup
-                  Center(
-                    child: TextButton(
-                      onPressed: _toggleMode,
-                      child: RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF666666),
-                          ),
-                          children: [
-                            TextSpan(
-                              text: _isSignUp
-                                  ? "Already have an account? "
-                                  : "Don't have an account? ",
-                            ),
-                            TextSpan(
-                              text: _isSignUp ? 'Sign In' : 'Sign up for free',
-                              style: const TextStyle(
-                                color: Color(0xFF2196F3),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isSignUp ? 'Already have an account? ' : 'Don\'t have an account? ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
                         ),
                       ),
-                    ),
+                      GestureDetector(
+                        onTap: _toggleMode,
+                        child: Text(
+                          _isSignUp ? 'Sign in' : 'Sign up',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF2196F3),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -597,14 +551,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _nameController.dispose();
-    super.dispose();
   }
 }

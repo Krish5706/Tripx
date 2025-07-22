@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,11 +29,21 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _animationController.forward();
+    _startApp();
+  }
 
-    // Delayed navigation
-    Timer(const Duration(seconds: 3), () {
+  Future<void> _startApp() async {
+    await Future.delayed(const Duration(seconds: 3));
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    print('🔍 DEBUG - isLoggedIn = $isLoggedIn');
+
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
       Navigator.pushReplacementNamed(context, '/login');
-    });
+    }
   }
 
   @override
@@ -43,54 +54,55 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.colorScheme.primaryContainer,
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Circular Icon
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
+          ),
+        ),
+        child: Center(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.flight,
+                    color: Colors.white,
+                    size: 50,
+                  ),
                 ),
-                child: const Icon(
-                  Icons
-                      .explore, // You can use Icons.public, Icons.flight_takeoff, etc.
-                  color: Colors.white,
-                  size: 50,
+                const SizedBox(height: 24),
+                const Text(
+                  'TripX',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'TripPlanner',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onPrimaryContainer,
+                const SizedBox(height: 8),
+                const Text(
+                  'Plan your adventures with ease',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Plan your adventures with ease',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,12 +1,19 @@
 import 'dart:async';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:crypto/crypto.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
+
+  /// Call this before any DB usage on desktop/web/test environments
+  static void initFfi() {
+    // Only needed for non-mobile platforms
+    databaseFactory = databaseFactoryFfi;
+  }
 
   DatabaseHelper._internal();
 
@@ -88,7 +95,7 @@ class DatabaseHelper {
 
       return userId;
     } catch (e) {
-      print('Error registering user: $e');
+      log('Error registering user: $e', name: 'DatabaseHelper');
       return -1;
     }
   }
@@ -122,7 +129,7 @@ class DatabaseHelper {
 
       return null; // Invalid credentials
     } catch (e) {
-      print('Error logging in user: $e');
+      log('Error logging in user: $e', name: 'DatabaseHelper');
       return null;
     }
   }
@@ -144,7 +151,7 @@ class DatabaseHelper {
 
       return null;
     } catch (e) {
-      print('Error getting user by ID: $e');
+      log('Error getting user by ID: $e', name: 'DatabaseHelper');
       return null;
     }
   }
@@ -166,7 +173,7 @@ class DatabaseHelper {
 
       return null;
     } catch (e) {
-      print('Error getting user by email: $e');
+      log('Error getting user by email: $e', name: 'DatabaseHelper');
       return null;
     }
   }
@@ -205,7 +212,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error updating user: $e');
+      log('Error updating user: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -247,7 +254,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error changing password: $e');
+      log('Error changing password: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -283,7 +290,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error resetting password: $e');
+      log('Error resetting password: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -308,7 +315,7 @@ class DatabaseHelper {
 
       return sessionToken;
     } catch (e) {
-      print('Error creating session: $e');
+      log('Error creating session: $e', name: 'DatabaseHelper');
       return null;
     }
   }
@@ -341,7 +348,7 @@ class DatabaseHelper {
 
       return null;
     } catch (e) {
-      print('Error validating session: $e');
+      log('Error validating session: $e', name: 'DatabaseHelper');
       return null;
     }
   }
@@ -359,7 +366,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error deleting session: $e');
+      log('Error deleting session: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -377,7 +384,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error deleting all user sessions: $e');
+      log('Error deleting all user sessions: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -395,7 +402,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error cleaning expired sessions: $e');
+      log('Error cleaning expired sessions: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -419,7 +426,7 @@ class DatabaseHelper {
 
       return users;
     } catch (e) {
-      print('Error getting all users: $e');
+      log('Error getting all users: $e', name: 'DatabaseHelper');
       return [];
     }
   }
@@ -445,7 +452,7 @@ class DatabaseHelper {
 
       return rowsAffected > 0;
     } catch (e) {
-      print('Error deleting user: $e');
+      log('Error deleting user: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -463,7 +470,7 @@ class DatabaseHelper {
 
       return users.isNotEmpty;
     } catch (e) {
-      print('Error checking if email exists: $e');
+      log('Error checking if email exists: $e', name: 'DatabaseHelper');
       return false;
     }
   }
@@ -476,7 +483,7 @@ class DatabaseHelper {
       final result = await db.rawQuery('SELECT COUNT(*) as count FROM users');
       return result.first['count'] as int;
     } catch (e) {
-      print('Error getting user count: $e');
+      log('Error getting user count: $e', name: 'DatabaseHelper');
       return 0;
     }
   }
@@ -500,7 +507,7 @@ class DatabaseHelper {
 
       return users;
     } catch (e) {
-      print('Error exporting users: $e');
+      log('Error exporting users: $e', name: 'DatabaseHelper');
       return [];
     }
   }
@@ -513,7 +520,7 @@ class DatabaseHelper {
       await db.execute('VACUUM');
       return true;
     } catch (e) {
-      print('Error vacuuming database: $e');
+      log('Error vacuuming database: $e', name: 'DatabaseHelper');
       return false;
     }
   }
