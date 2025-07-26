@@ -51,12 +51,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (_profileImagePath != null && _profileImagePath!.isNotEmpty) {
       final file = File(_profileImagePath!);
       final exists = await file.exists();
-      print("Trying to load image at: $_profileImagePath, exists: $exists");
+      // Removed print statement for production code; consider using a logging framework instead.
+      // print("Trying to load image at: $_profileImagePath, exists: $exists");
 
       if (exists) {
         imageFile = file;
       } else {
-        print("Image file not found at path: $_profileImagePath");
+        // Removed print statement for production code; consider using a logging framework instead.
+        // print("Image file not found at path: $_profileImagePath");
         _profileImagePath = null;
         await prefs.remove('profileImagePath');
       }
@@ -72,15 +74,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     });
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImageFromSource(ImageSource source) async {
     try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await _picker.pickImage(source: source);
       if (pickedFile == null) {
-        print("No image picked.");
+      // Removed print statement for production code; consider using a logging framework instead.
+      // print("No image picked.");
         return;
       }
 
-      print("Picked file path: ${pickedFile.path}");
+      // Removed print statement for production code; consider using a logging framework instead.
+      // print("Picked file path: ${pickedFile.path}");
 
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = path.basename(pickedFile.path);
@@ -89,15 +93,47 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       final savedImage = await File(pickedFile.path).copy(savedImagePath);
 
       final exists = await savedImage.exists();
-      print("Saved image to: $savedImagePath, exists: $exists");
+      // Removed print statement for production code; consider using a logging framework instead.
+      // print("Saved image to: $savedImagePath, exists: $exists");
 
       setState(() {
         _profileImage = savedImage;
         _profileImagePath = savedImage.path;
       });
     } catch (e) {
-      print("Error picking image: $e");
+      // Removed print statement for production code; consider using a logging framework instead.
+      // print("Error picking image: $e");
     }
+  }
+
+  void _showImageSourceActionSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take Photo'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickImageFromSource(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickImageFromSource(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _saveProfile() async {
@@ -166,7 +202,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 child: Column(
                   children: [
                     GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _showImageSourceActionSheet,
                       child: CircleAvatar(
                         radius: 50,
                         backgroundImage:

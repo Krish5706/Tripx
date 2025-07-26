@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/db_helper.dart';
@@ -24,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   ThemeMode? _selectedThemeMode;
   String? _userEmail;
   Map<String, dynamic>? _userProfile;
+  File? _profileImage;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   @override
@@ -48,11 +51,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadUserProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId');
+    final profileImagePath = prefs.getString('profileImagePath');
+    File? imageFile;
+    if (profileImagePath != null && profileImagePath.isNotEmpty) {
+      final file = File(profileImagePath);
+      if (await file.exists()) {
+        imageFile = file;
+      }
+    }
     if (userId == null) {
       if (!mounted) return;
       setState(() {
         _userEmail = prefs.getString('userEmail') ?? 'user@qmail.com';
         _userProfile = null;
+        _profileImage = null;
       });
       return;
     }
@@ -62,6 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _userProfile = profile;
       _userEmail = profile?['email'] ?? prefs.getString('userEmail') ?? 'user@qmail.com';
+      _profileImage = imageFile;
     });
   }
 
@@ -84,7 +97,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           _sectionHeader("Profile"),
           _modernTile(
-            leading: const CircleAvatar(child: Icon(Icons.person)),
+            leading: _profileImage != null
+                ? CircleAvatar(
+                    radius: 40,
+                    backgroundImage: FileImage(_profileImage!),
+                  )
+                : const CircleAvatar(radius: 40, child: Icon(Icons.person)),
             title: _userProfile != null && _userProfile!['name'] != null
                 ? _userProfile!['name']
                 : 'Loading...',
