@@ -17,6 +17,8 @@ dependencies:
   # Core packages
   shared_preferences: ^2.2.2
   cupertino_icons: ^1.0.8
+  image_picker: ^1.1.2
+  path_provider: ^2.0.15
 
   # SQLite Database
   sqflite: ^2.3.3+1

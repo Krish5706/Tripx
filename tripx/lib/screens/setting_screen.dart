@@ -1,4 +1,8 @@
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/db_helper.dart';
+import 'profile_edit_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -18,11 +22,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _autoSave = true;
 
   ThemeMode? _selectedThemeMode;
+  String? _userEmail;
+  Map<String, dynamic>? _userProfile;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   @override
   void initState() {
     _selectedThemeMode = widget.currentThemeMode;
     super.initState();
+    _loadUserProfile();
   }
 
   void _onThemeChanged(String? value) {
@@ -35,6 +43,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() => _selectedThemeMode = mode);
     widget.onThemeChanged(mode);
+  }
+
+  Future<void> _loadUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    if (userId == null) {
+      if (!mounted) return;
+      setState(() {
+        _userEmail = prefs.getString('userEmail') ?? 'user@qmail.com';
+        _userProfile = null;
+      });
+      return;
+    }
+
+    final profile = await _databaseHelper.getUserById(userId);
+    if (!mounted) return;
+    setState(() {
+      _userProfile = profile;
+      _userEmail = profile?['email'] ?? prefs.getString('userEmail') ?? 'user@qmail.com';
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all stored data on logout
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
   }
 
   @override
@@ -50,11 +85,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _sectionHeader("Profile"),
           _modernTile(
             leading: const CircleAvatar(child: Icon(Icons.person)),
-            title: "user@qmail.com",
-            subtitle: "Edit Profile",
+            title: _userProfile != null && _userProfile!['name'] != null
+                ? _userProfile!['name']
+                : 'Loading...',
+            subtitle: _userEmail ?? '',
             trailing: const Icon(Icons.edit),
-            onTap: () {
-              // TODO: Navigate to profile edit
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+              );
+              if (result == true) {
+                // Refresh profile data after edit
+                _loadUserProfile();
+              }
             },
           ),
           const SizedBox(height: 24),
@@ -129,9 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _modernTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: "Logout",
-            onTap: () {
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
-            },
+            onTap: _logout,
           ),
         ],
       ),
