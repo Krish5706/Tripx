@@ -524,4 +524,25 @@ class DatabaseHelper {
       return false;
     }
   }
+
+  // Clear all app data from local database
+Future<void> clearAllData() async {
+  final db = await database;
+
+  try {
+    // Disable foreign keys temporarily to avoid constraint issues
+    await db.execute('PRAGMA foreign_keys = OFF');
+
+    // Clear data from all tables
+    await db.delete('user_sessions');
+    await db.delete('users');
+
+    // Re-enable foreign keys
+    await db.execute('PRAGMA foreign_keys = ON');
+
+    log('All local database data cleared.', name: 'DatabaseHelper');
+  } catch (e) {
+    log('Error clearing all data: $e', name: 'DatabaseHelper');
+  }
+}
 }

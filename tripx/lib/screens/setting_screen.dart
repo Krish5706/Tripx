@@ -1,6 +1,4 @@
-
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/db_helper.dart';
@@ -11,10 +9,10 @@ class SettingsScreen extends StatefulWidget {
   final ValueChanged<ThemeMode> onThemeChanged;
 
   const SettingsScreen({
-    Key? key,
+    super.key, // ✅ use super parameter
     required this.onThemeChanged,
     required this.currentThemeMode,
-  }) : super(key: key);
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -38,12 +36,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _onThemeChanged(String? value) {
     if (value == null) return;
-    final mode = value == 'System'
-        ? ThemeMode.system
-        : value == 'Dark'
-            ? ThemeMode.dark
-            : ThemeMode.light;
-
+    final mode = switch (value) {
+      'System' => ThemeMode.system,
+      'Dark' => ThemeMode.dark,
+      _ => ThemeMode.light,
+    };
     setState(() => _selectedThemeMode = mode);
     widget.onThemeChanged(mode);
   }
@@ -52,6 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId');
     final profileImagePath = prefs.getString('profileImagePath');
+
     File? imageFile;
     if (profileImagePath != null && profileImagePath.isNotEmpty) {
       final file = File(profileImagePath);
@@ -59,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         imageFile = file;
       }
     }
+
     if (userId == null) {
       if (!mounted) return;
       setState(() {
@@ -80,9 +79,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Clear all stored data on logout
+    await prefs.clear();
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+  }
+
+  Future<void> _clearAppData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // Optional: clear local DB tables if needed
+    await _databaseHelper.clearAllData();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('App data cleared')),
+    );
+  }
+
+  void _confirmClearData() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clear App Data'),
+        content: const Text(
+            'Are you sure you want to remove all app data? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _clearAppData(); 
+            },
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -98,14 +134,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _sectionHeader("Profile"),
           _modernTile(
             leading: _profileImage != null
-                ? CircleAvatar(
-                    radius: 40,
-                    backgroundImage: FileImage(_profileImage!),
-                  )
+                ? CircleAvatar(radius: 40, backgroundImage: FileImage(_profileImage!))
                 : const CircleAvatar(radius: 40, child: Icon(Icons.person)),
-            title: _userProfile != null && _userProfile!['name'] != null
-                ? _userProfile!['name']
-                : 'Loading...',
+            title: _userProfile?['name'] ?? 'Loading...',
             subtitle: _userEmail ?? '',
             trailing: const Icon(Icons.edit),
             onTap: () async {
@@ -114,7 +145,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
               );
               if (result == true) {
-                // Refresh profile data after edit
                 _loadUserProfile();
               }
             },
@@ -157,12 +187,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _modernTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: "Privacy Policy",
-            onTap: () {}, // Add navigation
+            onTap: () {},
           ),
           _modernTile(
             leading: const Icon(Icons.description_outlined),
             title: "Terms of Service",
-            onTap: () {}, // Add navigation
+            onTap: () {},
           ),
           const SizedBox(height: 24),
 
@@ -199,42 +229,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _selectedThemeModeToString() {
-    switch (_selectedThemeMode) {
-      case ThemeMode.dark:
-        return 'Dark';
-      case ThemeMode.light:
-        return 'Light';
-      case ThemeMode.system:
-      default:
-        return 'System';
-    }
-  }
-
-  void _confirmClearData() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Clear App Data'),
-        content: const Text(
-            'Are you sure you want to remove all app data? This cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              // TODO: Add your data clearing logic
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('App data cleared')),
-              );
-            },
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
-    );
+    return switch (_selectedThemeMode) {
+      ThemeMode.dark => 'Dark',
+      ThemeMode.light => 'Light',
+      _ => 'System',
+    };
   }
 
   Widget _sectionHeader(String title) {

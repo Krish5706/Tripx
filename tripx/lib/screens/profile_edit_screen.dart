@@ -7,7 +7,7 @@ import 'package:path/path.dart' as path;
 import '../services/db_helper.dart';
 
 class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({Key? key}) : super(key: key);
+  const ProfileEditScreen({super.key});
 
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -51,14 +51,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (_profileImagePath != null && _profileImagePath!.isNotEmpty) {
       final file = File(_profileImagePath!);
       final exists = await file.exists();
-      // Removed print statement for production code; consider using a logging framework instead.
-      // print("Trying to load image at: $_profileImagePath, exists: $exists");
 
       if (exists) {
         imageFile = file;
       } else {
-        // Removed print statement for production code; consider using a logging framework instead.
-        // print("Image file not found at path: $_profileImagePath");
         _profileImagePath = null;
         await prefs.remove('profileImagePath');
       }
@@ -77,32 +73,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   Future<void> _pickImageFromSource(ImageSource source) async {
     try {
       final pickedFile = await _picker.pickImage(source: source);
-      if (pickedFile == null) {
-      // Removed print statement for production code; consider using a logging framework instead.
-      // print("No image picked.");
-        return;
-      }
-
-      // Removed print statement for production code; consider using a logging framework instead.
-      // print("Picked file path: ${pickedFile.path}");
+      if (pickedFile == null) return;
 
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = path.basename(pickedFile.path);
       final savedImagePath = '${appDir.path}/$fileName';
 
       final savedImage = await File(pickedFile.path).copy(savedImagePath);
-
-      final exists = await savedImage.exists();
-      // Removed print statement for production code; consider using a logging framework instead.
-      // print("Saved image to: $savedImagePath, exists: $exists");
+      await savedImage.exists(); // Ensures file exists (optional check)
 
       setState(() {
         _profileImage = savedImage;
         _profileImagePath = savedImage.path;
       });
     } catch (e) {
-      // Removed print statement for production code; consider using a logging framework instead.
-      // print("Error picking image: $e");
+      // Handle error (log or show to user)
     }
   }
 

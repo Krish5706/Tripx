@@ -37,7 +37,9 @@ class _SplashScreenState extends State<SplashScreen>
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-    print('🔍 DEBUG - isLoggedIn = $isLoggedIn');
+    debugPrint('🔍 DEBUG - isLoggedIn = $isLoggedIn'); // ✅ Fixed: use debugPrint
+
+    if (!mounted) return;
 
     if (isLoggedIn) {
       Navigator.pushReplacementNamed(context, '/dashboard');
@@ -73,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: const Color(0x33FFFFFF), // ✅ Replaced deprecated withOpacity
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
