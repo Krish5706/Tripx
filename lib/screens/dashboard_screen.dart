@@ -179,7 +179,7 @@ class _DashboardCardState extends State<_DashboardCard>
         color: Theme.of(context).cardColor,
         elevation: 8,
         borderRadius: BorderRadius.circular(20),
-        shadowColor: widget.item.color.withOpacity(0.3),
+        shadowColor: widget.item.color.withAlpha((0.3 * 255).toInt()),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTapDown: _onTapDown,
@@ -191,7 +191,7 @@ class _DashboardCardState extends State<_DashboardCard>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundColor: widget.item.color.withOpacity(0.15),
+                  backgroundColor: widget.item.color.withAlpha((0.15 * 255).toInt()),
                   radius: 30,
                   child: Icon(
                     widget.item.icon,

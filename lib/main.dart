@@ -7,6 +7,7 @@ import 'package:tripx/screens/login_screen.dart';
 import 'package:tripx/screens/setting_screen.dart';
 import 'package:tripx/screens/splash_screen.dart';
 import 'package:tripx/services/db_helper.dart';
+import 'package:tripx/screens/trip_details/notes.dart';
 
 void main() {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
@@ -62,7 +63,7 @@ class _MyAppState extends State<MyApp> {
         // '/trip_planner': (context) => const CreateTripScreen(),
         // '/schedule': (context) => const ScheduleScreen(),
         // '/packing_list': (context) => const PackingListScreen(),
-        // '/notes': (context) => const NotesScreen(),
+        '/notes': (context) => const NotesScreen(),
         // '/expenses': (context) => const ExpensesScreen(),
       },
     );
