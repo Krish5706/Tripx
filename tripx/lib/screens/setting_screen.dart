@@ -9,7 +9,7 @@ class SettingsScreen extends StatefulWidget {
   final ValueChanged<ThemeMode> onThemeChanged;
 
   const SettingsScreen({
-    super.key, // ✅ use super parameter
+    super.key,
     required this.onThemeChanged,
     required this.currentThemeMode,
   });
@@ -20,7 +20,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _autoSave = true;
-
   ThemeMode? _selectedThemeMode;
   String? _userEmail;
   Map<String, dynamic>? _userProfile;
@@ -87,8 +86,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _clearAppData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-
-    // Optional: clear local DB tables if needed
     await _databaseHelper.clearAllData();
 
     if (!mounted) return;
@@ -110,9 +107,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
             onPressed: () {
               Navigator.of(ctx).pop();
-              _clearAppData(); 
+              _clearAppData();
             },
             child: const Text('Clear'),
           ),
@@ -129,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
         children: [
           _sectionHeader("Profile"),
           _modernTile(

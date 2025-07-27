@@ -60,18 +60,14 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('TripX Dashboard'),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',
             onPressed: () async {
               final result = await Navigator.pushNamed(context, '/settings');
-
-              // Optional: handle returned data from settings screen
               if (result != null) {
-                // Do something with result
+                // Handle result if needed
               }
             },
           ),
@@ -82,21 +78,16 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Hello, Adventurer!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF222222),
-              ),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Choose your next move below.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF666666),
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 25),
             Expanded(
@@ -185,10 +176,10 @@ class _DashboardCardState extends State<_DashboardCard>
     return ScaleTransition(
       scale: _scaleAnim,
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         elevation: 8,
         borderRadius: BorderRadius.circular(20),
-        shadowColor: widget.item.color.withAlpha((0.3 * 255).round()),
+        shadowColor: widget.item.color.withOpacity(0.3),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTapDown: _onTapDown,
@@ -200,8 +191,7 @@ class _DashboardCardState extends State<_DashboardCard>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundColor:
-                      widget.item.color.withAlpha((0.15 * 255).round()),
+                  backgroundColor: widget.item.color.withOpacity(0.15),
                   radius: 30,
                   child: Icon(
                     widget.item.icon,
@@ -213,11 +203,9 @@ class _DashboardCardState extends State<_DashboardCard>
                 Text(
                   widget.item.title,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[800],
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
