@@ -18,71 +18,130 @@ class _PackingListScreenState extends State<PackingListScreen>
   String _selectedCategory = 'All';
   bool _showOnlyPacked = false;
   bool _showOnlyUnpacked = false;
+  String _sortBy = 'Priority';
 
-  // Pre-defined categories with suggested items
-  final Map<String, List<String>> _categoryTemplates = {
+  // Expanded categories with items for all age groups
+  final Map<String, List<Map<String, String>>> _categoryTemplates = {
     'Clothing': [
-      'T-shirts',
-      'Pants/Jeans',
-      'Underwear',
-      'Socks',
-      'Pajamas',
-      'Jacket/Coat',
-      'Shoes',
-      'Sandals',
-      'Dress/Formal wear',
-      'Swimwear'
+      {'name': 'T-shirts', 'description': 'Casual tops'},
+      {'name': 'Pants/Jeans', 'description': 'Everyday bottoms'},
+      {'name': 'Underwear', 'description': 'Daily essentials'},
+      {'name': 'Socks', 'description': 'Multiple pairs'},
+      {'name': 'Pajamas', 'description': 'Sleepwear'},
+      {'name': 'Jacket/Coat', 'description': 'Weather-appropriate outerwear'},
+      {'name': 'Shoes', 'description': 'Comfortable footwear'},
+      {'name': 'Sandals', 'description': 'Light footwear'},
+      {'name': 'Dress/Formal wear', 'description': 'For special occasions'},
+      {'name': 'Swimwear', 'description': 'For swimming'},
+      {'name': 'Hat/Cap', 'description': 'Sun protection'},
+      {'name': 'Scarf/Gloves', 'description': 'Cold weather gear'},
     ],
     'Toiletries': [
-      'Toothbrush',
-      'Toothpaste',
-      'Shampoo',
-      'Soap/Body wash',
-      'Deodorant',
-      'Sunscreen',
-      'Medications',
-      'Contact lenses',
-      'Razor',
-      'Makeup'
+      {'name': 'Toothbrush', 'description': 'Dental hygiene'},
+      {'name': 'Toothpaste', 'description': 'Dental hygiene'},
+      {'name': 'Shampoo', 'description': 'Hair cleaning'},
+      {'name': 'Soap/Body wash', 'description': 'Body cleaning'},
+      {'name': 'Deodorant', 'description': 'Odor protection'},
+      {'name': 'Sunscreen', 'description': 'UV protection'},
+      {'name': 'Medications', 'description': 'Prescription or OTC'},
+      {'name': 'Contact lenses', 'description': 'Vision correction'},
+      {'name': 'Razor', 'description': 'Shaving'},
+      {'name': 'Makeup', 'description': 'Cosmetics'},
+      {'name': 'Hairbrush/Comb', 'description': 'Hair grooming'},
+      {'name': 'Sanitary products', 'description': 'Personal hygiene'},
     ],
     'Electronics': [
-      'Phone charger',
-      'Power bank',
-      'Camera',
-      'Headphones',
-      'Laptop/Tablet',
-      'Travel adapter',
-      'Cables',
-      'Memory cards',
-      'Portable speaker'
+      {'name': 'Phone charger', 'description': 'Device charging'},
+      {'name': 'Power bank', 'description': 'Portable power'},
+      {'name': 'Camera', 'description': 'Photography'},
+      {'name': 'Headphones', 'description': 'Audio listening'},
+      {'name': 'Laptop/Tablet', 'description': 'Work/entertainment'},
+      {'name': 'Travel adapter', 'description': 'International plugs'},
+      {'name': 'Cables', 'description': 'Charging/data transfer'},
+      {'name': 'Memory cards', 'description': 'Storage'},
+      {'name': 'Portable speaker', 'description': 'Audio playback'},
+      {'name': 'Smartwatch', 'description': 'Fitness/time tracking'},
     ],
     'Documents': [
-      'Passport',
-      'ID/Driver\'s license',
-      'Tickets',
-      'Hotel confirmations',
-      'Travel insurance',
-      'Visa',
-      'Credit cards',
-      'Cash',
-      'Emergency contacts',
-      'Itinerary'
+      {'name': 'Passport', 'description': 'International travel ID'},
+      {'name': 'ID/Driver\'s license', 'description': 'Personal ID'},
+      {'name': 'Tickets', 'description': 'Travel tickets'},
+      {'name': 'Hotel confirmations', 'description': 'Accommodation proof'},
+      {'name': 'Travel insurance', 'description': 'Trip protection'},
+      {'name': 'Visa', 'description': 'Travel authorization'},
+      {'name': 'Credit cards', 'description': 'Payment method'},
+      {'name': 'Cash', 'description': 'Local currency'},
+      {'name': 'Emergency contacts', 'description': 'Safety contacts'},
+      {'name': 'Itinerary', 'description': 'Travel plan'},
+      {'name': 'Medical records', 'description': 'Health documentation'},
     ],
     'Essentials': [
-      'Wallet',
-      'Keys',
-      'Sunglasses',
-      'Watch',
-      'Umbrella',
-      'First aid kit',
-      'Snacks',
-      'Water bottle',
-      'Travel pillow',
-      'Eye mask'
-    ]
+      {'name': 'Wallet', 'description': 'Money/ID holder'},
+      {'name': 'Keys', 'description': 'Home/car keys'},
+      {'name': 'Sunglasses', 'description': 'Eye protection'},
+      {'name': 'Watch', 'description': 'Timekeeping'},
+      {'name': 'Umbrella', 'description': 'Rain protection'},
+      {'name': 'First aid kit', 'description': 'Basic medical supplies'},
+      {'name': 'Snacks', 'description': 'Quick bites'},
+      {'name': 'Water bottle', 'description': 'Hydration'},
+      {'name': 'Travel pillow', 'description': 'Comfort during travel'},
+      {'name': 'Eye mask', 'description': 'Sleep aid'},
+      {'name': 'Notebook/Pen', 'description': 'For notes'},
+      {'name': 'Reusable bag', 'description': 'Shopping/travel'},
+    ],
+    'Baby Essentials': [
+      {'name': 'Diapers', 'description': 'For newborn hygiene'},
+      {'name': 'Baby wipes', 'description': 'Cleaning wipes'},
+      {'name': 'Formula/Breast pump', 'description': 'Feeding essentials'},
+      {'name': 'Bottles', 'description': 'For feeding'},
+      {'name': 'Pacifier', 'description': 'Soothing item'},
+      {'name': 'Baby clothes', 'description': 'Onesies, socks, hats'},
+      {'name': 'Blankets', 'description': 'Warmth/comfort'},
+      {'name': 'Stroller', 'description': 'Baby transport'},
+      {'name': 'Diaper bag', 'description': 'Storage for baby items'},
+      {'name': 'Baby food', 'description': 'Purees/snacks'},
+      {'name': 'Baby monitor', 'description': 'Safety monitoring'},
+      {'name': 'Teething toys', 'description': 'For teething relief'},
+    ],
+    'Children\'s Items': [
+      {'name': 'Toys', 'description': 'Favorite play items'},
+      {'name': 'Books', 'description': 'Reading material'},
+      {'name': 'School supplies', 'description': 'Pencils, notebooks'},
+      {'name': 'Kids clothing', 'description': 'Age-appropriate clothes'},
+      {'name': 'Snacks', 'description': 'Child-friendly foods'},
+      {'name': 'Water bottle', 'description': 'Kid-sized hydration'},
+      {'name': 'Backpack', 'description': 'For carrying items'},
+      {'name': 'Sunscreen', 'description': 'Child-safe UV protection'},
+      {'name': 'Hat', 'description': 'Sun protection'},
+      {'name': 'Comfort item', 'description': 'Stuffed animal/blanket'},
+      {'name': 'Activity book', 'description': 'Puzzles/games'},
+    ],
+    'Elderly Care': [
+      {'name': 'Medications', 'description': 'Prescription drugs'},
+      {'name': 'Mobility aid', 'description': 'Cane/walker'},
+      {'name': 'Hearing aid', 'description': 'Hearing support'},
+      {'name': 'Glasses', 'description': 'Vision correction'},
+      {'name': 'Medical alert device', 'description': 'Emergency alert'},
+      {'name': 'Comfortable shoes', 'description': 'Non-slip footwear'},
+      {'name': 'Incontinence products', 'description': 'Hygiene needs'},
+      {'name': 'Pill organizer', 'description': 'Medication management'},
+      {'name': 'Warm clothing', 'description': 'Layered clothing'},
+      {'name': 'Blood pressure monitor', 'description': 'Health monitoring'},
+      {'name': 'Thermos', 'description': 'Hot/cold drinks'},
+    ],
   };
 
-  final List<String> _categories = ['All', 'Clothing', 'Toiletries', 'Electronics', 'Documents', 'Essentials'];
+  final List<String> _categories = [
+    'All',
+    'Clothing',
+    'Toiletries',
+    'Electronics',
+    'Documents',
+    'Essentials',
+    'Baby Essentials',
+    'Children\'s Items',
+    'Elderly Care',
+  ];
 
   @override
   void initState() {
@@ -90,16 +149,20 @@ class _PackingListScreenState extends State<PackingListScreen>
     _tabController = TabController(length: 2, vsync: this);
     _initializeWithSampleData();
     _filteredItems = List.from(_allItems);
+    _searchController.addListener(_filterItems);
   }
 
   void _initializeWithSampleData() {
-    // Add some sample items for demonstration
     _allItems = [
       PackingItem(name: 'Passport', category: 'Documents', priority: Priority.high),
       PackingItem(name: 'Phone charger', category: 'Electronics', priority: Priority.medium),
       PackingItem(name: 'T-shirts', category: 'Clothing', quantity: 3),
       PackingItem(name: 'Sunscreen', category: 'Toiletries', priority: Priority.medium),
+      PackingItem(name: 'Diapers', category: 'Baby Essentials', quantity: 10, priority: Priority.high),
+      PackingItem(name: 'Toys', category: 'Children\'s Items', quantity: 2),
+      PackingItem(name: 'Medications', category: 'Elderly Care', priority: Priority.high),
     ];
+    _filterItems();
   }
 
   @override
@@ -110,19 +173,66 @@ class _PackingListScreenState extends State<PackingListScreen>
     super.dispose();
   }
 
+  bool _itemExists(String name) {
+    return _allItems.any((item) => item.name.toLowerCase() == name.toLowerCase());
+  }
+
   void _addItem(String name, String category, {int quantity = 1, Priority priority = Priority.medium}) {
-    if (name.trim().isEmpty) return;
+    if (name.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item name cannot be empty')),
+      );
+      return;
+    }
+
+    if (_itemExists(name.trim())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Item "$name" already exists in the list')),
+      );
+      return;
+    }
 
     setState(() {
       _allItems.add(PackingItem(
         name: name.trim(),
         category: category,
-        quantity: quantity,
+        quantity: quantity.clamp(1, 99),
         priority: priority,
       ));
       _filterItems();
     });
     _itemController.clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Added $name to packing list')),
+    );
+  }
+
+  void _editItem(int index, String name, String category, int quantity, Priority priority) {
+    if (name.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item name cannot be empty')),
+      );
+      return;
+    }
+
+    String oldName = _filteredItems[index].name;
+    if (name.trim() != oldName && _itemExists(name.trim())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Item "$name" already exists in the list')),
+      );
+      return;
+    }
+
+    setState(() {
+      _filteredItems[index].name = name.trim();
+      _filteredItems[index].category = category;
+      _filteredItems[index].quantity = quantity.clamp(1, 99);
+      _filteredItems[index].priority = priority;
+      _filterItems();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Updated $name')),
+    );
   }
 
   void _toggleItemPacked(int index) {
@@ -132,11 +242,26 @@ class _PackingListScreenState extends State<PackingListScreen>
   }
 
   void _deleteItem(int index) {
+    String itemName = _filteredItems[index].name;
+    PackingItem itemToDelete = _filteredItems[index];
     setState(() {
-      PackingItem itemToDelete = _filteredItems[index];
       _allItems.remove(itemToDelete);
       _filterItems();
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Deleted $itemName'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _allItems.add(itemToDelete);
+              _filterItems();
+            });
+          },
+        ),
+      ),
+    );
   }
 
   void _filterItems() {
@@ -152,35 +277,49 @@ class _PackingListScreenState extends State<PackingListScreen>
         return matchesCategory && matchesSearch && matchesPackedFilter;
       }).toList();
 
-      // Sort by priority and then by name
-      _filteredItems.sort((a, b) {
-        int priorityComparison = b.priority.index.compareTo(a.priority.index);
-        if (priorityComparison != 0) return priorityComparison;
-        return a.name.compareTo(b.name);
-      });
+      if (_sortBy == 'Priority') {
+        _filteredItems.sort((a, b) {
+          int priorityComparison = b.priority.index.compareTo(a.priority.index);
+          if (priorityComparison != 0) return priorityComparison;
+          return a.name.compareTo(b.name);
+        });
+      } else if (_sortBy == 'Name') {
+        _filteredItems.sort((a, b) => a.name.compareTo(b.name));
+      } else if (_sortBy == 'Category') {
+        _filteredItems.sort((a, b) {
+          int categoryComparison = a.category.compareTo(b.category);
+          if (categoryComparison != 0) return categoryComparison;
+          return a.name.compareTo(b.name);
+        });
+      }
     });
   }
 
-  void _showAddItemDialog() {
-    String selectedCategory = 'Clothing';
-    int quantity = 1;
-    Priority priority = Priority.medium;
+  void _showAddItemDialog({PackingItem? item, int? index}) {
+    String selectedCategory = item?.category ?? 'Clothing';
+    int quantity = item?.quantity ?? 1;
+    Priority priority = item?.priority ?? Priority.medium;
+    _itemController.text = item?.name ?? '';
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Add Item'),
+          title: Text(item == null ? 'Add Item' : 'Edit Item'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _itemController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Item name',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  errorText: _itemController.text.trim().isEmpty ? 'Required' : null,
                 ),
                 autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                onChanged: (_) => setDialogState(() {}),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -191,7 +330,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                 ),
                 items: _categories.skip(1).map((category) {
                   return DropdownMenuItem(value: category, child: Text(category));
-                                        }).toList(),
+                }).toList(),
                 onChanged: (value) {
                   setDialogState(() {
                     selectedCategory = value!;
@@ -209,6 +348,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.next,
                       onChanged: (value) {
                         quantity = int.tryParse(value) ?? 1;
                       },
@@ -226,7 +366,6 @@ class _PackingListScreenState extends State<PackingListScreen>
                         return DropdownMenuItem(
                           value: p,
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.circle,
@@ -234,12 +373,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                                 size: 12,
                               ),
                               const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  p.name.toUpperCase(),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
+                              Text(p.name.toUpperCase()),
                             ],
                           ),
                         );
@@ -262,11 +396,15 @@ class _PackingListScreenState extends State<PackingListScreen>
             ),
             ElevatedButton(
               onPressed: () {
-                _addItem(_itemController.text, selectedCategory,
-                    quantity: quantity, priority: priority);
+                if (item == null) {
+                  _addItem(_itemController.text, selectedCategory,
+                      quantity: quantity, priority: priority);
+                } else {
+                  _editItem(index!, _itemController.text, selectedCategory, quantity, priority);
+                }
                 Navigator.pop(context);
               },
-              child: const Text('Add'),
+              child: Text(item == null ? 'Add' : 'Update'),
             ),
           ],
         ),
@@ -275,83 +413,81 @@ class _PackingListScreenState extends State<PackingListScreen>
   }
 
   void _showTemplateDialog() {
+    Map<String, bool> selectedItems = {};
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add from Templates'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 400,
-          child: ListView.builder(
-            itemCount: _categoryTemplates.keys.length,
-            itemBuilder: (context, index) {
-              String category = _categoryTemplates.keys.elementAt(index);
-              List<String> items = _categoryTemplates[category]!;
-              
-              return ExpansionTile(
-                title: Text(category),
-                leading: Icon(_getCategoryIcon(category)),
-                children: items.map((item) {
-                  bool alreadyExists = _allItems.any((existingItem) => 
-                      existingItem.name.toLowerCase() == item.toLowerCase());
-                  
-                  return ListTile(
-                    title: Text(item),
-                    trailing: alreadyExists 
-                        ? const Icon(Icons.check, color: Colors.green)
-                        : IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () {
-                              _addItem(item, category);
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Added $item to packing list')),
-                              );
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Add from Templates'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: ListView.builder(
+              itemCount: _categoryTemplates.keys.length,
+              itemBuilder: (context, index) {
+                String category = _categoryTemplates.keys.elementAt(index);
+                List<Map<String, String>> items = _categoryTemplates[category]!;
+
+                return ExpansionTile(
+                  title: Text(category, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  leading: Icon(_getCategoryIcon(category), color: Colors.blue.shade600),
+                  children: items.map((item) {
+                    bool alreadyExists = _itemExists(item['name']!);
+                    selectedItems[item['name']!] ??= false;
+
+                    return CheckboxListTile(
+                      title: Text(item['name']!),
+                      subtitle: Text(
+                        item['description']!,
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                      ),
+                      value: alreadyExists ? true : selectedItems[item['name']!],
+                      activeColor: Colors.blue.shade600,
+                      onChanged: alreadyExists
+                          ? null
+                          : (value) {
+                              setDialogState(() {
+                                selectedItems[item['name']!] = value!;
+                              });
                             },
-                          ),
-                    enabled: !alreadyExists,
+                      secondary: alreadyExists
+                          ? const Icon(Icons.check, color: Colors.green)
+                          : null,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                selectedItems.forEach((name, selected) {
+                  if (selected && !_itemExists(name)) {
+                    String category = _categoryTemplates.entries
+                        .firstWhere((entry) => entry.value.any((item) => item['name'] == name))
+                        .key;
+                    _addItem(name, category);
+                  }
+                });
+                Navigator.pop(context);
+                if (selectedItems.values.any((selected) => selected)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Selected items added to packing list')),
                   );
-                }).toList(),
-              );
-            },
-          ),
+                }
+              },
+              child: const Text('Add Selected'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
-  }
-
-  Color _getPriorityColor(Priority priority) {
-    switch (priority) {
-      case Priority.high:
-        return Colors.red;
-      case Priority.medium:
-        return Colors.orange;
-      case Priority.low:
-        return Colors.green;
-    }
-  }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Clothing':
-        return Icons.checkroom;
-      case 'Toiletries':
-        return Icons.soap;
-      case 'Electronics':
-        return Icons.devices;
-      case 'Documents':
-        return Icons.description;
-      case 'Essentials':
-        return Icons.star;
-      default:
-        return Icons.category;
-    }
   }
 
   void _showStatsDialog() {
@@ -375,15 +511,18 @@ class _PackingListScreenState extends State<PackingListScreen>
           children: [
             Text('Progress: ${(progress * 100).toInt()}%'),
             const SizedBox(height: 8),
-            LinearProgressIndicator(value: progress),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+            ),
             const SizedBox(height: 16),
             Text('Total Items: $totalItems'),
             Text('Packed: $packedItems', style: const TextStyle(color: Colors.green)),
             Text('Remaining: $unpackedItems', style: const TextStyle(color: Colors.orange)),
             const SizedBox(height: 16),
             const Text('By Category:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...categoryStats.entries.map((entry) => 
-              Text('${entry.key}: ${entry.value}')),
+            ...categoryStats.entries.map((entry) => Text('${entry.key}: ${entry.value}')),
           ],
         ),
         actions: [
@@ -394,6 +533,40 @@ class _PackingListScreenState extends State<PackingListScreen>
         ],
       ),
     );
+  }
+
+  Color _getPriorityColor(Priority priority) {
+    switch (priority) {
+      case Priority.high:
+        return Colors.red.shade600;
+      case Priority.medium:
+        return Colors.orange.shade600;
+      case Priority.low:
+        return Colors.green.shade600;
+    }
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Clothing':
+        return Icons.checkroom;
+      case 'Toiletries':
+        return Icons.soap;
+      case 'Electronics':
+        return Icons.devices;
+      case 'Documents':
+        return Icons.description;
+      case 'Essentials':
+        return Icons.star;
+      case 'Baby Essentials':
+        return Icons.child_care;
+      case 'Children\'s Items':
+        return Icons.toys;
+      case 'Elderly Care':
+        return Icons.elderly;
+      default:
+        return Icons.category;
+    }
   }
 
   @override
@@ -411,18 +584,57 @@ class _PackingListScreenState extends State<PackingListScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.analytics),
+            tooltip: 'View Statistics',
             onPressed: _showStatsDialog,
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort),
+            tooltip: 'Sort Items',
+            onSelected: (value) {
+              setState(() {
+                _sortBy = value;
+                _filterItems();
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'Priority', child: Text('Sort by Priority')),
+              const PopupMenuItem(value: 'Name', child: Text('Sort by Name')),
+              const PopupMenuItem(value: 'Category', child: Text('Sort by Category')),
+            ],
           ),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert),
+            tooltip: 'More Options',
             itemBuilder: (context) => [
               PopupMenuItem(
                 child: const Text('Clear All'),
                 onTap: () {
-                  setState(() {
-                    _allItems.clear();
-                    _filterItems();
-                  });
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Clear All Items'),
+                      content: const Text('Are you sure you want to clear all items from the packing list?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _allItems.clear();
+                              _filterItems();
+                            });
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('All items cleared')),
+                            );
+                          },
+                          child: const Text('Clear', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
               PopupMenuItem(
@@ -432,6 +644,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                     for (var item in _allItems) {
                       item.isPacked = true;
                     }
+                    _filterItems();
                   });
                 },
               ),
@@ -442,6 +655,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                     for (var item in _allItems) {
                       item.isPacked = false;
                     }
+                    _filterItems();
                   });
                 },
               ),
@@ -453,13 +667,12 @@ class _PackingListScreenState extends State<PackingListScreen>
           child: LinearProgressIndicator(
             value: progress,
             backgroundColor: Colors.white24,
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
         ),
       ),
       body: Column(
         children: [
-          // Progress Header
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.blue.shade50,
@@ -469,6 +682,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                 Text(
                   '$packedCount of $totalCount items packed',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  semanticsLabel: '$packedCount of $totalCount items packed',
                 ),
                 Text(
                   '${(progress * 100).toInt()}%',
@@ -481,8 +695,6 @@ class _PackingListScreenState extends State<PackingListScreen>
               ],
             ),
           ),
-          
-          // Search and Filter
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -501,18 +713,19 @@ class _PackingListScreenState extends State<PackingListScreen>
                             },
                           )
                         : null,
-                    border: const OutlineInputBorder(),
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
                   ),
-                  onChanged: (value) => _filterItems(),
+                  textInputAction: TextInputAction.search,
                 ),
                 const SizedBox(height: 12),
-                
-                // Filter Row
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      // Category Filters
                       ..._categories.map((category) {
                         bool isSelected = _selectedCategory == category;
                         return Padding(
@@ -520,6 +733,8 @@ class _PackingListScreenState extends State<PackingListScreen>
                           child: FilterChip(
                             label: Text(category),
                             selected: isSelected,
+                            selectedColor: Colors.blue.shade100,
+                            checkmarkColor: Colors.blue.shade600,
                             onSelected: (selected) {
                               setState(() {
                                 _selectedCategory = category;
@@ -529,13 +744,12 @@ class _PackingListScreenState extends State<PackingListScreen>
                           ),
                         );
                       }),
-                      
                       const SizedBox(width: 16),
-                      
-                      // Status Filters
                       FilterChip(
                         label: const Text('Packed'),
                         selected: _showOnlyPacked,
+                        selectedColor: Colors.green.shade100,
+                        checkmarkColor: Colors.green.shade600,
                         onSelected: (selected) {
                           setState(() {
                             _showOnlyPacked = selected;
@@ -548,6 +762,8 @@ class _PackingListScreenState extends State<PackingListScreen>
                       FilterChip(
                         label: const Text('Unpacked'),
                         selected: _showOnlyUnpacked,
+                        selectedColor: Colors.orange.shade100,
+                        checkmarkColor: Colors.orange.shade600,
                         onSelected: (selected) {
                           setState(() {
                             _showOnlyUnpacked = selected;
@@ -562,8 +778,6 @@ class _PackingListScreenState extends State<PackingListScreen>
               ],
             ),
           ),
-          
-          // Items List
           Expanded(
             child: _filteredItems.isEmpty
                 ? Center(
@@ -583,7 +797,11 @@ class _PackingListScreenState extends State<PackingListScreen>
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
                           ),
+                          semanticsLabel: _allItems.isEmpty
+                              ? 'No items in your packing list'
+                              : 'No items match your filters',
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -598,16 +816,21 @@ class _PackingListScreenState extends State<PackingListScreen>
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemCount: _filteredItems.length,
                     itemBuilder: (context, index) {
                       PackingItem item = _filteredItems[index];
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: ListTile(
                           leading: Checkbox(
                             value: item.isPacked,
+                            activeColor: Colors.blue.shade600,
                             onChanged: (value) => _toggleItemPacked(index),
+                            semanticLabel: item.isPacked ? 'Unpack ${item.name}' : 'Pack ${item.name}',
                           ),
                           title: Text(
                             item.name,
@@ -618,6 +841,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                               color: item.isPacked
                                   ? Colors.grey.shade600
                                   : Colors.black,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           subtitle: Row(
@@ -628,10 +852,16 @@ class _PackingListScreenState extends State<PackingListScreen>
                                 color: Colors.grey.shade600,
                               ),
                               const SizedBox(width: 4),
-                              Text(item.category),
+                              Text(
+                                item.category,
+                                style: TextStyle(color: Colors.grey.shade600),
+                              ),
                               if (item.quantity > 1) ...[
                                 const SizedBox(width: 8),
-                                Text('× ${item.quantity}'),
+                                Text(
+                                  '× ${item.quantity}',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
                               ],
                               const SizedBox(width: 8),
                               Icon(
@@ -654,7 +884,9 @@ class _PackingListScreenState extends State<PackingListScreen>
                               PopupMenuItem(
                                 child: const Text('Edit'),
                                 onTap: () {
-                                  // Edit functionality can be implemented here
+                                  Future.delayed(Duration.zero, () {
+                                    _showAddItemDialog(item: item, index: index);
+                                  });
                                 },
                               ),
                               PopupMenuItem(
@@ -678,6 +910,7 @@ class _PackingListScreenState extends State<PackingListScreen>
             mini: true,
             onPressed: _showTemplateDialog,
             backgroundColor: Colors.blue.shade300,
+            tooltip: 'Add from Templates',
             child: const Icon(Icons.list_alt),
           ),
           const SizedBox(height: 8),
@@ -685,6 +918,7 @@ class _PackingListScreenState extends State<PackingListScreen>
             heroTag: "add",
             onPressed: _showAddItemDialog,
             backgroundColor: Colors.blue.shade600,
+            tooltip: 'Add New Item',
             child: const Icon(Icons.add),
           ),
         ],
