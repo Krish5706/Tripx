@@ -102,7 +102,7 @@ class _NotesScreenState extends State<NotesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Travel Diary'),
-        backgroundColor: Colors.amber[700],
+        backgroundColor: Colors.blue[600],
         elevation: 0,
       ),
       body: Container(
@@ -110,7 +110,7 @@ class _NotesScreenState extends State<NotesScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.amber[100]!, Colors.amber[50]!],
+            colors: [Colors.blue[100]!, Colors.blue[50]!],
           ),
         ),
         child: Padding(
@@ -145,7 +145,7 @@ class _NotesScreenState extends State<NotesScreen> {
                       ElevatedButton(
                         onPressed: _addNote,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber[700],
+                          backgroundColor: Colors.blue[600],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -172,7 +172,7 @@ class _NotesScreenState extends State<NotesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.book, size: 80, color: Colors.amber[400]),
+                            Icon(Icons.book, size: 80, color: const Color.fromARGB(255, 84, 140, 201)),
                             const SizedBox(height: 10),
                             Text(
                               'No travel memories yet.\nStart writing your adventures!',

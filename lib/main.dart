@@ -9,6 +9,7 @@ import 'package:tripx/screens/splash_screen.dart';
 import 'package:tripx/services/db_helper.dart';
 import 'package:tripx/screens/trip_details/notes.dart';
 import 'package:tripx/screens/trip_details/packing_list.dart';
+import 'package:tripx/screens/trip_details/expenses.dart'; // Added import
 
 void main() {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
@@ -56,16 +57,16 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/settings': (context) => SettingsScreen(
-              currentThemeMode: _themeMode,
-              onThemeChanged: _updateThemeMode,
-            ),
+          currentThemeMode: _themeMode,
+          onThemeChanged: _updateThemeMode,
+        ),
         // Future screens can be added below
         // '/destination': (context) => const DestinationIdeasScreen(),
         // '/trip_planner': (context) => const CreateTripScreen(),
         // '/schedule': (context) => const ScheduleScreen(),
         '/packing_list': (context) => const PackingListScreen(),
         '/notes': (context) => const NotesScreen(),
-        // '/expenses': (context) => const ExpensesScreen(),
+        '/expenses': (context) => const ExpenseScreen(), // Added route
       },
     );
   }

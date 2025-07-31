@@ -19,6 +19,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   image_picker: ^1.1.2
   path_provider: ^2.0.15
+  fl_chart: ^0.65.0
 
   # SQLite Database
   sqflite: ^2.3.3+1  # Matches your specified version
