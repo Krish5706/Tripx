@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class PackingListScreen extends StatefulWidget {
@@ -11,6 +13,7 @@ class _PackingListScreenState extends State<PackingListScreen>
     with TickerProviderStateMixin {
   final TextEditingController _itemController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
 
   List<PackingItem> _allItems = [];
@@ -19,8 +22,9 @@ class _PackingListScreenState extends State<PackingListScreen>
   bool _showOnlyPacked = false;
   bool _showOnlyUnpacked = false;
   String _sortBy = 'Priority';
+  bool _showFab = true;
+  Timer? _scrollTimer;
 
-  // Expanded categories with items for all age groups
   final Map<String, List<Map<String, String>>> _categoryTemplates = {
     'Clothing': [
       {'name': 'T-shirts', 'description': 'Casual tops'},
@@ -150,17 +154,41 @@ class _PackingListScreenState extends State<PackingListScreen>
     _initializeWithSampleData();
     _filteredItems = List.from(_allItems);
     _searchController.addListener(_filterItems);
+
+    // Add scroll listener to control FAB visibility
+    _scrollController.addListener(_onScroll);
   }
 
   void _initializeWithSampleData() {
     _allItems = [
-      PackingItem(name: 'Passport', category: 'Documents', priority: Priority.high),
-      PackingItem(name: 'Phone charger', category: 'Electronics', priority: Priority.medium),
+      PackingItem(
+        name: 'Passport',
+        category: 'Documents',
+        priority: Priority.high,
+      ),
+      PackingItem(
+        name: 'Phone charger',
+        category: 'Electronics',
+        priority: Priority.medium,
+      ),
       PackingItem(name: 'T-shirts', category: 'Clothing', quantity: 3),
-      PackingItem(name: 'Sunscreen', category: 'Toiletries', priority: Priority.medium),
-      PackingItem(name: 'Diapers', category: 'Baby Essentials', quantity: 10, priority: Priority.high),
+      PackingItem(
+        name: 'Sunscreen',
+        category: 'Toiletries',
+        priority: Priority.medium,
+      ),
+      PackingItem(
+        name: 'Diapers',
+        category: 'Baby Essentials',
+        quantity: 10,
+        priority: Priority.high,
+      ),
       PackingItem(name: 'Toys', category: 'Children\'s Items', quantity: 2),
-      PackingItem(name: 'Medications', category: 'Elderly Care', priority: Priority.high),
+      PackingItem(
+        name: 'Medications',
+        category: 'Elderly Care',
+        priority: Priority.high,
+      ),
     ];
     _filterItems();
   }
@@ -170,14 +198,23 @@ class _PackingListScreenState extends State<PackingListScreen>
     _itemController.dispose();
     _searchController.dispose();
     _tabController.dispose();
+    _scrollController.dispose();
+    _scrollTimer?.cancel(); // Cancel the timer to prevent memory leaks
     super.dispose();
   }
 
   bool _itemExists(String name) {
-    return _allItems.any((item) => item.name.toLowerCase() == name.toLowerCase());
+    return _allItems.any(
+      (item) => item.name.toLowerCase() == name.toLowerCase(),
+    );
   }
 
-  void _addItem(String name, String category, {int quantity = 1, Priority priority = Priority.medium}) {
+  void _addItem(
+    String name,
+    String category, {
+    int quantity = 1,
+    Priority priority = Priority.medium,
+  }) {
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Item name cannot be empty')),
@@ -193,21 +230,29 @@ class _PackingListScreenState extends State<PackingListScreen>
     }
 
     setState(() {
-      _allItems.add(PackingItem(
-        name: name.trim(),
-        category: category,
-        quantity: quantity.clamp(1, 99),
-        priority: priority,
-      ));
+      _allItems.add(
+        PackingItem(
+          name: name.trim(),
+          category: category,
+          quantity: quantity.clamp(1, 99),
+          priority: priority,
+        ),
+      );
       _filterItems();
     });
     _itemController.clear();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added $name to packing list')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Added $name to packing list')));
   }
 
-  void _editItem(int index, String name, String category, int quantity, Priority priority) {
+  void _editItem(
+    int index,
+    String name,
+    String category,
+    int quantity,
+    Priority priority,
+  ) {
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Item name cannot be empty')),
@@ -230,9 +275,9 @@ class _PackingListScreenState extends State<PackingListScreen>
       _filteredItems[index].priority = priority;
       _filterItems();
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Updated $name')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Updated $name')));
   }
 
   void _toggleItemPacked(int index) {
@@ -267,10 +312,15 @@ class _PackingListScreenState extends State<PackingListScreen>
   void _filterItems() {
     setState(() {
       _filteredItems = _allItems.where((item) {
-        bool matchesCategory = _selectedCategory == 'All' || item.category == _selectedCategory;
-        bool matchesSearch = _searchController.text.isEmpty ||
-            item.name.toLowerCase().contains(_searchController.text.toLowerCase());
-        bool matchesPackedFilter = (!_showOnlyPacked && !_showOnlyUnpacked) ||
+        bool matchesCategory =
+            _selectedCategory == 'All' || item.category == _selectedCategory;
+        bool matchesSearch =
+            _searchController.text.isEmpty ||
+            item.name.toLowerCase().contains(
+              _searchController.text.toLowerCase(),
+            );
+        bool matchesPackedFilter =
+            (!_showOnlyPacked && !_showOnlyUnpacked) ||
             (_showOnlyPacked && item.isPacked) ||
             (_showOnlyUnpacked && !item.isPacked);
 
@@ -314,7 +364,9 @@ class _PackingListScreenState extends State<PackingListScreen>
                 decoration: InputDecoration(
                   labelText: 'Item name',
                   border: const OutlineInputBorder(),
-                  errorText: _itemController.text.trim().isEmpty ? 'Required' : null,
+                  errorText: _itemController.text.trim().isEmpty
+                      ? 'Required'
+                      : null,
                 ),
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
@@ -329,7 +381,10 @@ class _PackingListScreenState extends State<PackingListScreen>
                   border: OutlineInputBorder(),
                 ),
                 items: _categories.skip(1).map((category) {
-                  return DropdownMenuItem(value: category, child: Text(category));
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(category),
+                  );
                 }).toList(),
                 onChanged: (value) {
                   setDialogState(() {
@@ -397,10 +452,20 @@ class _PackingListScreenState extends State<PackingListScreen>
             ElevatedButton(
               onPressed: () {
                 if (item == null) {
-                  _addItem(_itemController.text, selectedCategory,
-                      quantity: quantity, priority: priority);
+                  _addItem(
+                    _itemController.text,
+                    selectedCategory,
+                    quantity: quantity,
+                    priority: priority,
+                  );
                 } else {
-                  _editItem(index!, _itemController.text, selectedCategory, quantity, priority);
+                  _editItem(
+                    index!,
+                    _itemController.text,
+                    selectedCategory,
+                    quantity,
+                    priority,
+                  );
                 }
                 Navigator.pop(context);
               },
@@ -430,8 +495,14 @@ class _PackingListScreenState extends State<PackingListScreen>
                 List<Map<String, String>> items = _categoryTemplates[category]!;
 
                 return ExpansionTile(
-                  title: Text(category, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  leading: Icon(_getCategoryIcon(category), color: Colors.blue.shade600),
+                  title: Text(
+                    category,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  leading: Icon(
+                    _getCategoryIcon(category),
+                    color: Colors.blue.shade600,
+                  ),
                   children: items.map((item) {
                     bool alreadyExists = _itemExists(item['name']!);
                     selectedItems[item['name']!] ??= false;
@@ -440,9 +511,14 @@ class _PackingListScreenState extends State<PackingListScreen>
                       title: Text(item['name']!),
                       subtitle: Text(
                         item['description']!,
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
                       ),
-                      value: alreadyExists ? true : selectedItems[item['name']!],
+                      value: alreadyExists
+                          ? true
+                          : selectedItems[item['name']!],
                       activeColor: Colors.blue.shade600,
                       onChanged: alreadyExists
                           ? null
@@ -470,7 +546,10 @@ class _PackingListScreenState extends State<PackingListScreen>
                 selectedItems.forEach((name, selected) {
                   if (selected && !_itemExists(name)) {
                     String category = _categoryTemplates.entries
-                        .firstWhere((entry) => entry.value.any((item) => item['name'] == name))
+                        .firstWhere(
+                          (entry) =>
+                              entry.value.any((item) => item['name'] == name),
+                        )
                         .key;
                     _addItem(name, category);
                   }
@@ -478,7 +557,9 @@ class _PackingListScreenState extends State<PackingListScreen>
                 Navigator.pop(context);
                 if (selectedItems.values.any((selected) => selected)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Selected items added to packing list')),
+                    const SnackBar(
+                      content: Text('Selected items added to packing list'),
+                    ),
                   );
                 }
               },
@@ -498,7 +579,9 @@ class _PackingListScreenState extends State<PackingListScreen>
 
     Map<String, int> categoryStats = {};
     for (String category in _categories.skip(1)) {
-      categoryStats[category] = _allItems.where((item) => item.category == category).length;
+      categoryStats[category] = _allItems
+          .where((item) => item.category == category)
+          .length;
     }
 
     showDialog(
@@ -518,11 +601,22 @@ class _PackingListScreenState extends State<PackingListScreen>
             ),
             const SizedBox(height: 16),
             Text('Total Items: $totalItems'),
-            Text('Packed: $packedItems', style: const TextStyle(color: Colors.green)),
-            Text('Remaining: $unpackedItems', style: const TextStyle(color: Colors.orange)),
+            Text(
+              'Packed: $packedItems',
+              style: const TextStyle(color: Colors.green),
+            ),
+            Text(
+              'Remaining: $unpackedItems',
+              style: const TextStyle(color: Colors.orange),
+            ),
             const SizedBox(height: 16),
-            const Text('By Category:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...categoryStats.entries.map((entry) => Text('${entry.key}: ${entry.value}')),
+            const Text(
+              'By Category:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            ...categoryStats.entries.map(
+              (entry) => Text('${entry.key}: ${entry.value}'),
+            ),
           ],
         ),
         actions: [
@@ -569,184 +663,219 @@ class _PackingListScreenState extends State<PackingListScreen>
     }
   }
 
+  // Handle scroll events to control FAB visibility (mimics Google Drive behavior)
+  void _onScroll() {
+    if (_scrollController.position.isScrollingNotifier.value) {
+      // Scrolling has started or is in progress
+      if (_showFab) {
+        setState(() {
+          _showFab = false;
+        });
+      }
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer(const Duration(milliseconds: 300), () {
+        if (!_scrollController.position.isScrollingNotifier.value) {
+          setState(() {
+            _showFab = true;
+          });
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     int packedCount = _allItems.where((item) => item.isPacked).length;
     int totalCount = _allItems.length;
     double progress = totalCount > 0 ? packedCount / totalCount : 0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Packing List'),
-        backgroundColor: Colors.blue.shade600,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.analytics),
-            tooltip: 'View Statistics',
-            onPressed: _showStatsDialog,
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            tooltip: 'Sort Items',
-            onSelected: (value) {
-              setState(() {
-                _sortBy = value;
-                _filterItems();
-              });
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'Priority', child: Text('Sort by Priority')),
-              const PopupMenuItem(value: 'Name', child: Text('Sort by Name')),
-              const PopupMenuItem(value: 'Category', child: Text('Sort by Category')),
-            ],
-          ),
-          PopupMenuButton(
-            icon: const Icon(Icons.more_vert),
-            tooltip: 'More Options',
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: const Text('Clear All'),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Clear All Items'),
-                      content: const Text('Are you sure you want to clear all items from the packing list?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _allItems.clear();
-                              _filterItems();
-                            });
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('All items cleared')),
-                            );
-                          },
-                          child: const Text('Clear', style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            backgroundColor: Colors.blue.shade600,
+            foregroundColor: Colors.white,
+            title: const Text('Packing List'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.analytics),
+                tooltip: 'View Statistics',
+                onPressed: _showStatsDialog,
               ),
-              PopupMenuItem(
-                child: const Text('Mark All Packed'),
-                onTap: () {
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.sort),
+                tooltip: 'Sort Items',
+                onSelected: (value) {
                   setState(() {
-                    for (var item in _allItems) {
-                      item.isPacked = true;
-                    }
+                    _sortBy = value;
                     _filterItems();
                   });
                 },
-              ),
-              PopupMenuItem(
-                child: const Text('Mark All Unpacked'),
-                onTap: () {
-                  setState(() {
-                    for (var item in _allItems) {
-                      item.isPacked = false;
-                    }
-                    _filterItems();
-                  });
-                },
-              ),
-            ],
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.white24,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.blue.shade50,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '$packedCount of $totalCount items packed',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  semanticsLabel: '$packedCount of $totalCount items packed',
-                ),
-                Text(
-                  '${(progress * 100).toInt()}%',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade600,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'Priority',
+                    child: Text('Sort by Priority'),
                   ),
-                ),
-              ],
+                  const PopupMenuItem(
+                    value: 'Name',
+                    child: Text('Sort by Name'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'Category',
+                    child: Text('Sort by Category'),
+                  ),
+                ],
+              ),
+              PopupMenuButton(
+                icon: const Icon(Icons.more_vert),
+                tooltip: 'More Options',
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    child: const Text('Clear All'),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Clear All Items'),
+                          content: const Text(
+                            'Are you sure you want to clear all items from the packing list?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _allItems.clear();
+                                  _filterItems();
+                                });
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('All items cleared'),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Clear',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  PopupMenuItem(
+                    child: const Text('Mark All Packed'),
+                    onTap: () {
+                      setState(() {
+                        for (var item in _allItems) {
+                          item.isPacked = true;
+                        }
+                        _filterItems();
+                      });
+                    },
+                  ),
+                  PopupMenuItem(
+                    child: const Text('Mark All Unpacked'),
+                    onTap: () {
+                      setState(() {
+                        for (var item in _allItems) {
+                          item.isPacked = false;
+                        }
+                        _filterItems();
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white24,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search items...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _filterItems();
-                            },
-                          )
-                        : null,
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
+          SliverToBoxAdapter(
+            child: Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.01,
+                horizontal: screenWidth * 0.04,
+              ),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search items...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            _filterItems();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                    borderSide: BorderSide.none,
                   ),
-                  textInputAction: TextInputAction.search,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.02,
+                  ),
                 ),
-                const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ..._categories.map((category) {
-                        bool isSelected = _selectedCategory == category;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            selectedColor: Colors.blue.shade100,
-                            checkmarkColor: Colors.blue.shade600,
-                            onSelected: (selected) {
-                              setState(() {
-                                _selectedCategory = category;
-                                _filterItems();
-                              });
-                            },
+                textInputAction: TextInputAction.search,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: screenHeight * 0.07,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                child: Row(
+                  children: [
+                    ..._categories.map(
+                      (category) => Padding(
+                        padding: EdgeInsets.only(right: screenWidth * 0.02),
+                        child: FilterChip(
+                          label: Text(
+                            category,
+                            style: TextStyle(fontSize: screenWidth * 0.035),
                           ),
-                        );
-                      }),
-                      const SizedBox(width: 16),
-                      FilterChip(
-                        label: const Text('Packed'),
+                          selected: _selectedCategory == category,
+                          selectedColor: Colors.blue.shade100,
+                          checkmarkColor: Colors.blue.shade600,
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedCategory = category;
+                              _filterItems();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(right: screenWidth * 0.02),
+                      child: FilterChip(
+                        label: Text(
+                          'Packed',
+                          style: TextStyle(fontSize: screenWidth * 0.035),
+                        ),
                         selected: _showOnlyPacked,
                         selectedColor: Colors.green.shade100,
                         checkmarkColor: Colors.green.shade600,
@@ -758,44 +887,80 @@ class _PackingListScreenState extends State<PackingListScreen>
                           });
                         },
                       ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: const Text('Unpacked'),
-                        selected: _showOnlyUnpacked,
-                        selectedColor: Colors.orange.shade100,
-                        checkmarkColor: Colors.orange.shade600,
-                        onSelected: (selected) {
-                          setState(() {
-                            _showOnlyUnpacked = selected;
-                            if (selected) _showOnlyPacked = false;
-                            _filterItems();
-                          });
-                        },
+                    ),
+                    FilterChip(
+                      label: Text(
+                        'Unpacked',
+                        style: TextStyle(fontSize: screenWidth * 0.035),
                       ),
-                    ],
-                  ),
+                      selected: _showOnlyUnpacked,
+                      selectedColor: Colors.orange.shade100,
+                      checkmarkColor: Colors.orange.shade600,
+                      onSelected: (selected) {
+                        setState(() {
+                          _showOnlyUnpacked = selected;
+                          if (selected) _showOnlyPacked = false;
+                          _filterItems();
+                        });
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-          Expanded(
-            child: _filteredItems.isEmpty
-                ? Center(
+          SliverToBoxAdapter(
+            child: Container(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              color: Colors.blue.shade50,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      '$packedCount of $totalCount items packed',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      semanticsLabel:
+                          '$packedCount of $totalCount items packed',
+                    ),
+                  ),
+                  Text(
+                    '${(progress * 100).toInt()}%',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              if (_filteredItems.isEmpty) {
+                return SizedBox(
+                  height: screenHeight * 0.5,
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.luggage,
-                          size: 64,
+                          size: screenWidth * 0.15,
                           color: Colors.grey.shade400,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: screenHeight * 0.02),
                         Text(
                           _allItems.isEmpty
                               ? 'No items in your packing list'
                               : 'No items match your filters',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: screenWidth * 0.045,
                             color: Colors.grey.shade600,
                             fontWeight: FontWeight.w500,
                           ),
@@ -803,126 +968,139 @@ class _PackingListScreenState extends State<PackingListScreen>
                               ? 'No items in your packing list'
                               : 'No items match your filters',
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: screenHeight * 0.01),
                         Text(
                           _allItems.isEmpty
                               ? 'Add some items to get started!'
                               : 'Try adjusting your search or filters',
                           style: TextStyle(
+                            fontSize: screenWidth * 0.035,
                             color: Colors.grey.shade500,
                           ),
                         ),
                       ],
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: _filteredItems.length,
-                    itemBuilder: (context, index) {
-                      PackingItem item = _filteredItems[index];
-                      return Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: item.isPacked,
-                            activeColor: Colors.blue.shade600,
-                            onChanged: (value) => _toggleItemPacked(index),
-                            semanticLabel: item.isPacked ? 'Unpack ${item.name}' : 'Pack ${item.name}',
-                          ),
-                          title: Text(
-                            item.name,
-                            style: TextStyle(
-                              decoration: item.isPacked
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                              color: item.isPacked
-                                  ? Colors.grey.shade600
-                                  : Colors.black,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Icon(
-                                _getCategoryIcon(item.category),
-                                size: 16,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                item.category,
-                                style: TextStyle(color: Colors.grey.shade600),
-                              ),
-                              if (item.quantity > 1) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  '× ${item.quantity}',
-                                  style: TextStyle(color: Colors.grey.shade600),
-                                ),
-                              ],
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.circle,
-                                size: 8,
-                                color: _getPriorityColor(item.priority),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                item.priority.name.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: _getPriorityColor(item.priority),
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: PopupMenuButton(
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                child: const Text('Edit'),
-                                onTap: () {
-                                  Future.delayed(Duration.zero, () {
-                                    _showAddItemDialog(item: item, index: index);
-                                  });
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: const Text('Delete'),
-                                onTap: () => _deleteItem(index),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
                   ),
+                );
+              }
+              PackingItem item = _filteredItems[index];
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading: Checkbox(
+                    value: item.isPacked,
+                    activeColor: Colors.blue.shade600,
+                    onChanged: (value) => _toggleItemPacked(index),
+                    semanticLabel: item.isPacked
+                        ? 'Unpack ${item.name}'
+                        : 'Pack ${item.name}',
+                  ),
+                  title: Text(
+                    item.name,
+                    style: TextStyle(
+                      decoration: item.isPacked
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      color: item.isPacked
+                          ? Colors.grey.shade600
+                          : Colors.black,
+                      fontWeight: FontWeight.w500,
+                      fontSize: screenWidth * 0.04,
+                    ),
+                  ),
+                  subtitle: Row(
+                    children: [
+                      Icon(
+                        _getCategoryIcon(item.category),
+                        size: screenWidth * 0.04,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        item.category,
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                      if (item.quantity > 1) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '× ${item.quantity}',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.circle,
+                        size: screenWidth * 0.02,
+                        color: _getPriorityColor(item.priority),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        item.priority.name.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.03,
+                          color: _getPriorityColor(item.priority),
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: PopupMenuButton(
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        child: const Text('Edit'),
+                        onTap: () {
+                          Future.delayed(Duration.zero, () {
+                            _showAddItemDialog(item: item, index: index);
+                          });
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: const Text('Delete'),
+                        onTap: () => _deleteItem(index),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }, childCount: _filteredItems.isEmpty ? 1 : _filteredItems.length),
           ),
         ],
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: "templates",
-            mini: true,
-            onPressed: _showTemplateDialog,
-            backgroundColor: Colors.blue.shade300,
-            tooltip: 'Add from Templates',
-            child: const Icon(Icons.list_alt),
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: "add",
-            onPressed: _showAddItemDialog,
-            backgroundColor: Colors.blue.shade600,
-            tooltip: 'Add New Item',
-            child: const Icon(Icons.add),
-          ),
-        ],
+      floatingActionButton: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: _showFab ? 1.0 : 0.0,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+              child: FloatingActionButton(
+                heroTag: "templates",
+                mini: true,
+                onPressed: _showTemplateDialog,
+                backgroundColor: Colors.blue.shade300,
+                tooltip: 'Add from Templates',
+                child: const Icon(Icons.list_alt),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
+              child: FloatingActionButton(
+                heroTag: "add",
+                onPressed: _showAddItemDialog,
+                backgroundColor: Colors.blue.shade600,
+                tooltip: 'Add New Item',
+                child: const Icon(Icons.add),
+              ),
+            ),
+          ],
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
