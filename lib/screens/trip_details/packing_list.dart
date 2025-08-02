@@ -199,7 +199,7 @@ class _PackingListScreenState extends State<PackingListScreen>
     _searchController.dispose();
     _tabController.dispose();
     _scrollController.dispose();
-    _scrollTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    _scrollTimer?.cancel();
     super.dispose();
   }
 
@@ -217,14 +217,24 @@ class _PackingListScreenState extends State<PackingListScreen>
   }) {
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item name cannot be empty')),
+        SnackBar(
+          content: Text(
+            'Item name cannot be empty',
+            style: TextStyle(color: Theme.of(context).colorScheme.onError),
+          ),
+        ),
       );
       return;
     }
 
     if (_itemExists(name.trim())) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Item "$name" already exists in the list')),
+        SnackBar(
+          content: Text(
+            'Item "$name" already exists in the list',
+            style: TextStyle(color: Theme.of(context).colorScheme.onError),
+          ),
+        ),
       );
       return;
     }
@@ -241,9 +251,14 @@ class _PackingListScreenState extends State<PackingListScreen>
       _filterItems();
     });
     _itemController.clear();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Added $name to packing list')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Added $name to packing list',
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+        ),
+      ),
+    );
   }
 
   void _editItem(
@@ -255,7 +270,12 @@ class _PackingListScreenState extends State<PackingListScreen>
   ) {
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item name cannot be empty')),
+        SnackBar(
+          content: Text(
+            'Item name cannot be empty',
+            style: TextStyle(color: Theme.of(context).colorScheme.onError),
+          ),
+        ),
       );
       return;
     }
@@ -263,7 +283,12 @@ class _PackingListScreenState extends State<PackingListScreen>
     String oldName = _filteredItems[index].name;
     if (name.trim() != oldName && _itemExists(name.trim())) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Item "$name" already exists in the list')),
+        SnackBar(
+          content: Text(
+            'Item "$name" already exists in the list',
+            style: TextStyle(color: Theme.of(context).colorScheme.onError),
+          ),
+        ),
       );
       return;
     }
@@ -275,9 +300,14 @@ class _PackingListScreenState extends State<PackingListScreen>
       _filteredItems[index].priority = priority;
       _filterItems();
     });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Updated $name')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Updated $name',
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+        ),
+      ),
+    );
   }
 
   void _toggleItemPacked(int index) {
@@ -295,9 +325,13 @@ class _PackingListScreenState extends State<PackingListScreen>
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Deleted $itemName'),
+        content: Text(
+          'Deleted $itemName',
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+        ),
         action: SnackBarAction(
           label: 'Undo',
+          textColor: Theme.of(context).colorScheme.primary,
           onPressed: () {
             setState(() {
               _allItems.add(itemToDelete);
@@ -314,13 +348,11 @@ class _PackingListScreenState extends State<PackingListScreen>
       _filteredItems = _allItems.where((item) {
         bool matchesCategory =
             _selectedCategory == 'All' || item.category == _selectedCategory;
-        bool matchesSearch =
-            _searchController.text.isEmpty ||
+        bool matchesSearch = _searchController.text.isEmpty ||
             item.name.toLowerCase().contains(
-              _searchController.text.toLowerCase(),
-            );
-        bool matchesPackedFilter =
-            (!_showOnlyPacked && !_showOnlyUnpacked) ||
+                  _searchController.text.toLowerCase(),
+                );
+        bool matchesPackedFilter = (!_showOnlyPacked && !_showOnlyUnpacked) ||
             (_showOnlyPacked && item.isPacked) ||
             (_showOnlyUnpacked && !item.isPacked);
 
@@ -355,101 +387,129 @@ class _PackingListScreenState extends State<PackingListScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(item == null ? 'Add Item' : 'Edit Item'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _itemController,
-                decoration: InputDecoration(
-                  labelText: 'Item name',
-                  border: const OutlineInputBorder(),
-                  errorText: _itemController.text.trim().isEmpty
-                      ? 'Required'
-                      : null,
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.next,
-                onChanged: (_) => setDialogState(() {}),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
-                ),
-                items: _categories.skip(1).map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setDialogState(() {
-                    selectedCategory = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      initialValue: quantity.toString(),
-                      decoration: const InputDecoration(
-                        labelText: 'Quantity',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (value) {
-                        quantity = int.tryParse(value) ?? 1;
-                      },
+          title: Text(
+            item == null ? 'Add Item' : 'Edit Item',
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _itemController,
+                  decoration: InputDecoration(
+                    labelText: 'Item name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    errorText:
+                        _itemController.text.trim().isEmpty ? 'Required' : null,
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<Priority>(
-                      value: priority,
-                      decoration: const InputDecoration(
-                        labelText: 'Priority',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: Priority.values.map((p) {
-                        return DropdownMenuItem(
-                          value: p,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.circle,
-                                color: _getPriorityColor(p),
-                                size: 12,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(p.name.toUpperCase()),
-                            ],
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) => setDialogState(() {}),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  decoration: InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
+                  items: _categories.skip(1).map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      selectedCategory = value!;
+                    });
+                  },
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: quantity.toString(),
+                        decoration: InputDecoration(
+                          labelText: 'Quantity',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setDialogState(() {
-                          priority = value!;
-                        });
-                      },
+                          filled: true,
+                          fillColor:
+                              Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ),
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (value) {
+                          quantity = int.tryParse(value) ?? 1;
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.04),
+                    Expanded(
+                      child: DropdownButtonFormField<Priority>(
+                        value: priority,
+                        decoration: InputDecoration(
+                          labelText: 'Priority',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor:
+                              Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ),
+                        items: Priority.values.map((p) {
+                          return DropdownMenuItem(
+                            value: p,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  color: _getPriorityColor(p),
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(p.name.toUpperCase()),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setDialogState(() {
+                            priority = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child:
+                  Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              ),
               onPressed: () {
                 if (item == null) {
                   _addItem(
@@ -484,10 +544,14 @@ class _PackingListScreenState extends State<PackingListScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Add from Templates'),
+          title: Text(
+            'Add from Templates',
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.surface,
           content: SizedBox(
             width: double.maxFinite,
-            height: 400,
+            height: MediaQuery.of(context).size.height * 0.5,
             child: ListView.builder(
               itemCount: _categoryTemplates.keys.length,
               itemBuilder: (context, index) {
@@ -497,29 +561,32 @@ class _PackingListScreenState extends State<PackingListScreen>
                 return ExpansionTile(
                   title: Text(
                     category,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface),
                   ),
                   leading: Icon(
                     _getCategoryIcon(category),
-                    color: Colors.blue.shade600,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   children: items.map((item) {
                     bool alreadyExists = _itemExists(item['name']!);
                     selectedItems[item['name']!] ??= false;
 
                     return CheckboxListTile(
-                      title: Text(item['name']!),
+                      title: Text(
+                        item['name']!,
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      ),
                       subtitle: Text(
                         item['description']!,
                         style: TextStyle(
-                          color: Colors.grey.shade600,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 12,
                         ),
                       ),
-                      value: alreadyExists
-                          ? true
-                          : selectedItems[item['name']!],
-                      activeColor: Colors.blue.shade600,
+                      value: alreadyExists ? true : selectedItems[item['name']!],
+                      activeColor: Theme.of(context).colorScheme.primary,
                       onChanged: alreadyExists
                           ? null
                           : (value) {
@@ -528,7 +595,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                               });
                             },
                       secondary: alreadyExists
-                          ? const Icon(Icons.check, color: Colors.green)
+                          ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                           : null,
                     );
                   }).toList(),
@@ -539,16 +606,20 @@ class _PackingListScreenState extends State<PackingListScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child:
+                  Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              ),
               onPressed: () {
                 selectedItems.forEach((name, selected) {
                   if (selected && !_itemExists(name)) {
                     String category = _categoryTemplates.entries
                         .firstWhere(
-                          (entry) =>
-                              entry.value.any((item) => item['name'] == name),
+                          (entry) => entry.value.any((item) => item['name'] == name),
                         )
                         .key;
                     _addItem(name, category);
@@ -557,8 +628,12 @@ class _PackingListScreenState extends State<PackingListScreen>
                 Navigator.pop(context);
                 if (selectedItems.values.any((selected) => selected)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Selected items added to packing list'),
+                    SnackBar(
+                      content: Text(
+                        'Selected items added to packing list',
+                        style:
+                            TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                      ),
                     ),
                   );
                 }
@@ -579,50 +654,67 @@ class _PackingListScreenState extends State<PackingListScreen>
 
     Map<String, int> categoryStats = {};
     for (String category in _categories.skip(1)) {
-      categoryStats[category] = _allItems
-          .where((item) => item.category == category)
-          .length;
+      categoryStats[category] =
+          _allItems.where((item) => item.category == category).length;
     }
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Packing Statistics'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Progress: ${(progress * 100).toInt()}%'),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade200,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-            ),
-            const SizedBox(height: 16),
-            Text('Total Items: $totalItems'),
-            Text(
-              'Packed: $packedItems',
-              style: const TextStyle(color: Colors.green),
-            ),
-            Text(
-              'Remaining: $unpackedItems',
-              style: const TextStyle(color: Colors.orange),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'By Category:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            ...categoryStats.entries.map(
-              (entry) => Text('${entry.key}: ${entry.value}'),
-            ),
-          ],
+        title: Text(
+          'Packing Statistics',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Progress: ${(progress * 100).toInt()}%',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              Text(
+                'Total Items: $totalItems',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
+              Text(
+                'Packed: $packedItems',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+              Text(
+                'Remaining: $unpackedItems',
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              Text(
+                'By Category:',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface),
+              ),
+              ...categoryStats.entries.map(
+                (entry) => Text(
+                  '${entry.key}: ${entry.value}',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -663,10 +755,8 @@ class _PackingListScreenState extends State<PackingListScreen>
     }
   }
 
-  // Handle scroll events to control FAB visibility (mimics Google Drive behavior)
   void _onScroll() {
     if (_scrollController.position.isScrollingNotifier.value) {
-      // Scrolling has started or is in progress
       if (_showFab) {
         setState(() {
           _showFab = false;
@@ -692,13 +782,14 @@ class _PackingListScreenState extends State<PackingListScreen>
     double progress = totalCount > 0 ? packedCount / totalCount : 0;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
           SliverAppBar(
             pinned: true,
-            backgroundColor: Colors.blue.shade600,
-            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             title: const Text('Packing List'),
             actions: [
               IconButton(
@@ -716,17 +807,26 @@ class _PackingListScreenState extends State<PackingListScreen>
                   });
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Priority',
-                    child: Text('Sort by Priority'),
+                    child: Text(
+                      'Sort by Priority',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Name',
-                    child: Text('Sort by Name'),
+                    child: Text(
+                      'Sort by Name',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'Category',
-                    child: Text('Sort by Category'),
+                    child: Text(
+                      'Sort by Category',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
                   ),
                 ],
               ),
@@ -735,19 +835,31 @@ class _PackingListScreenState extends State<PackingListScreen>
                 tooltip: 'More Options',
                 itemBuilder: (context) => [
                   PopupMenuItem(
-                    child: const Text('Clear All'),
+                    child: Text(
+                      'Clear All',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
                     onTap: () {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Clear All Items'),
-                          content: const Text(
-                            'Are you sure you want to clear all items from the packing list?',
+                          title: Text(
+                            'Clear All Items',
+                            style:
+                                TextStyle(color: Theme.of(context).colorScheme.onSurface),
                           ),
+                          content: Text(
+                            'Are you sure you want to clear all items from the packing list?',
+                            style:
+                                TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                          ),
+                          backgroundColor: Theme.of(context).colorScheme.surface,
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
+                              child: Text('Cancel',
+                                  style: TextStyle(
+                                      color: Theme.of(context).colorScheme.primary)),
                             ),
                             TextButton(
                               onPressed: () {
@@ -757,14 +869,20 @@ class _PackingListScreenState extends State<PackingListScreen>
                                 });
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('All items cleared'),
+                                  SnackBar(
+                                    content: Text(
+                                      'All items cleared',
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).colorScheme.onPrimary),
+                                    ),
                                   ),
                                 );
                               },
-                              child: const Text(
+                              child: Text(
                                 'Clear',
-                                style: TextStyle(color: Colors.red),
+                                style:
+                                    TextStyle(color: Theme.of(context).colorScheme.error),
                               ),
                             ),
                           ],
@@ -773,7 +891,10 @@ class _PackingListScreenState extends State<PackingListScreen>
                     },
                   ),
                   PopupMenuItem(
-                    child: const Text('Mark All Packed'),
+                    child: Text(
+                      'Mark All Packed',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
                     onTap: () {
                       setState(() {
                         for (var item in _allItems) {
@@ -784,7 +905,10 @@ class _PackingListScreenState extends State<PackingListScreen>
                     },
                   ),
                   PopupMenuItem(
-                    child: const Text('Mark All Unpacked'),
+                    child: Text(
+                      'Mark All Unpacked',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
                     onTap: () {
                       setState(() {
                         for (var item in _allItems) {
@@ -801,26 +925,34 @@ class _PackingListScreenState extends State<PackingListScreen>
               preferredSize: const Size.fromHeight(4),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white24,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .onPrimary
+                    .withValues(alpha: 0.2),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: Container(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               padding: EdgeInsets.symmetric(
-                vertical: screenHeight * 0.01,
+                vertical: screenHeight * 0.015,
                 horizontal: screenWidth * 0.04,
               ),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search items...',
-                  prefixIcon: const Icon(Icons.search),
+                  hintStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  prefixIcon: Icon(Icons.search,
+                      color: Theme.of(context).colorScheme.onSurface),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: Icon(Icons.clear,
+                              color: Theme.of(context).colorScheme.onSurface),
                           onPressed: () {
                             _searchController.clear();
                             _filterItems();
@@ -828,25 +960,28 @@ class _PackingListScreenState extends State<PackingListScreen>
                         )
                       : null,
                   filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: const OutlineInputBorder(
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.02,
+                    horizontal: screenWidth * 0.04,
+                    vertical: screenHeight * 0.015,
                   ),
                 ),
                 textInputAction: TextInputAction.search,
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: screenHeight * 0.07,
+              height: screenHeight * 0.08,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.04, vertical: screenHeight * 0.01),
                 child: Row(
                   children: [
                     ..._categories.map(
@@ -855,11 +990,18 @@ class _PackingListScreenState extends State<PackingListScreen>
                         child: FilterChip(
                           label: Text(
                             category,
-                            style: TextStyle(fontSize: screenWidth * 0.035),
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.035,
+                              color: _selectedCategory == category
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                           selected: _selectedCategory == category,
-                          selectedColor: Colors.blue.shade100,
-                          checkmarkColor: Colors.blue.shade600,
+                          selectedColor: Theme.of(context).colorScheme.primary,
+                          checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.surfaceContainerHighest,
                           onSelected: (_) {
                             setState(() {
                               _selectedCategory = category;
@@ -874,11 +1016,18 @@ class _PackingListScreenState extends State<PackingListScreen>
                       child: FilterChip(
                         label: Text(
                           'Packed',
-                          style: TextStyle(fontSize: screenWidth * 0.035),
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.035,
+                            color: _showOnlyPacked
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                         selected: _showOnlyPacked,
-                        selectedColor: Colors.green.shade100,
-                        checkmarkColor: Colors.green.shade600,
+                        selectedColor: Colors.green.shade600,
+                        checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
                         onSelected: (selected) {
                           setState(() {
                             _showOnlyPacked = selected;
@@ -891,218 +1040,254 @@ class _PackingListScreenState extends State<PackingListScreen>
                     FilterChip(
                       label: Text(
                         'Unpacked',
-                        style: TextStyle(fontSize: screenWidth * 0.035),
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.035,
+                          color: _showOnlyUnpacked
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        selected: _showOnlyUnpacked,
+                        selectedColor: Colors.orange.shade600,
+                        checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                        onSelected: (selected) {
+                          setState(() {
+                            _showOnlyUnpacked = selected;
+                            if (selected) _showOnlyPacked = false;
+                            _filterItems();
+                          });
+                        },
                       ),
-                      selected: _showOnlyUnpacked,
-                      selectedColor: Colors.orange.shade100,
-                      checkmarkColor: Colors.orange.shade600,
-                      onSelected: (selected) {
-                        setState(() {
-                          _showOnlyUnpacked = selected;
-                          if (selected) _showOnlyPacked = false;
-                          _filterItems();
-                        });
-                      },
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '$packedCount of $totalCount items packed',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.04,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        semanticsLabel: '$packedCount of $totalCount items packed',
+                      ),
+                    ),
+                    Text(
+                      '${(progress * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              color: Colors.blue.shade50,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      '$packedCount of $totalCount items packed',
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                if (_filteredItems.isEmpty) {
+                  return SizedBox(
+                    height: screenHeight * 0.5,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.luggage,
+                            size: screenWidth * 0.15,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          SizedBox(height: screenHeight * 0.02),
+                          Text(
+                            _allItems.isEmpty
+                                ? 'No items in your packing list'
+                                : 'No items match your filters',
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.045,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            semanticsLabel: _allItems.isEmpty
+                                ? 'No items in your packing list'
+                                : 'No items match your filters',
+                          ),
+                          SizedBox(height: screenHeight * 0.01),
+                          Text(
+                            _allItems.isEmpty
+                                ? 'Add some items to get started!'
+                                : 'Try adjusting your search or filters',
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.035,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                PackingItem item = _filteredItems[index];
+                return Card(
+                  elevation: 2,
+                  color: Theme.of(context).colorScheme.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  margin: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.04,
+                    vertical: screenHeight * 0.01,
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.02,
+                      vertical: screenHeight * 0.01,
+                    ),
+                    leading: Checkbox(
+                      value: item.isPacked,
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      onChanged: (value) => _toggleItemPacked(index),
+                      semanticLabel:
+                          item.isPacked ? 'Unpack ${item.name}' : 'Pack ${item.name}',
+                    ),
+                    title: Text(
+                      item.name,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.04,
+                        decoration: item.isPacked
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        color: item.isPacked
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
+                        fontSize: screenWidth * 0.04,
                       ),
                       overflow: TextOverflow.ellipsis,
-                      semanticsLabel:
-                          '$packedCount of $totalCount items packed',
                     ),
-                  ),
-                  Text(
-                    '${(progress * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.04,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade600,
+                    subtitle: Flexible(
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getCategoryIcon(item.category),
+                            size: screenWidth * 0.04,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              item.category,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (item.quantity > 1) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              '× ${item.quantity}',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface),
+                            ),
+                          ],
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.circle,
+                            size: screenWidth * 0.02,
+                            color: _getPriorityColor(item.priority),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.priority.name.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.03,
+                              color: _getPriorityColor(item.priority),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              if (_filteredItems.isEmpty) {
-                return SizedBox(
-                  height: screenHeight * 0.5,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.luggage,
-                          size: screenWidth * 0.15,
-                          color: Colors.grey.shade400,
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-                        Text(
-                          _allItems.isEmpty
-                              ? 'No items in your packing list'
-                              : 'No items match your filters',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.045,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+                    trailing: PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          child: Text(
+                            'Edit',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                           ),
-                          semanticsLabel: _allItems.isEmpty
-                              ? 'No items in your packing list'
-                              : 'No items match your filters',
+                          onTap: () {
+                            Future.delayed(Duration.zero, () {
+                              _showAddItemDialog(item: item, index: index);
+                            });
+                          },
                         ),
-                        SizedBox(height: screenHeight * 0.01),
-                        Text(
-                          _allItems.isEmpty
-                              ? 'Add some items to get started!'
-                              : 'Try adjusting your search or filters',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.035,
-                            color: Colors.grey.shade500,
+                        PopupMenuItem(
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                           ),
+                          onTap: () => _deleteItem(index),
                         ),
                       ],
                     ),
                   ),
                 );
-              }
-              PackingItem item = _filteredItems[index];
-              return Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: Checkbox(
-                    value: item.isPacked,
-                    activeColor: Colors.blue.shade600,
-                    onChanged: (value) => _toggleItemPacked(index),
-                    semanticLabel: item.isPacked
-                        ? 'Unpack ${item.name}'
-                        : 'Pack ${item.name}',
-                  ),
-                  title: Text(
-                    item.name,
-                    style: TextStyle(
-                      decoration: item.isPacked
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                      color: item.isPacked
-                          ? Colors.grey.shade600
-                          : Colors.black,
-                      fontWeight: FontWeight.w500,
-                      fontSize: screenWidth * 0.04,
-                    ),
-                  ),
-                  subtitle: Row(
-                    children: [
-                      Icon(
-                        _getCategoryIcon(item.category),
-                        size: screenWidth * 0.04,
-                        color: Colors.grey.shade600,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.category,
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                      if (item.quantity > 1) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '× ${item.quantity}',
-                          style: TextStyle(color: Colors.grey.shade600),
-                        ),
-                      ],
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.circle,
-                        size: screenWidth * 0.02,
-                        color: _getPriorityColor(item.priority),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.priority.name.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.03,
-                          color: _getPriorityColor(item.priority),
-                        ),
-                      ),
-                    ],
-                  ),
-                  trailing: PopupMenuButton(
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        child: const Text('Edit'),
-                        onTap: () {
-                          Future.delayed(Duration.zero, () {
-                            _showAddItemDialog(item: item, index: index);
-                          });
-                        },
-                      ),
-                      PopupMenuItem(
-                        child: const Text('Delete'),
-                        onTap: () => _deleteItem(index),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }, childCount: _filteredItems.isEmpty ? 1 : _filteredItems.length),
-          ),
-        ],
-      ),
-      floatingActionButton: AnimatedOpacity(
-        duration: const Duration(milliseconds: 300),
-        opacity: _showFab ? 1.0 : 0.0,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
-              child: FloatingActionButton(
-                heroTag: "templates",
-                mini: true,
-                onPressed: _showTemplateDialog,
-                backgroundColor: Colors.blue.shade300,
-                tooltip: 'Add from Templates',
-                child: const Icon(Icons.list_alt),
-              ),
+              }, childCount: _filteredItems.isEmpty ? 1 : _filteredItems.length),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0, bottom: 16.0),
-              child: FloatingActionButton(
-                heroTag: "add",
-                onPressed: _showAddItemDialog,
-                backgroundColor: Colors.blue.shade600,
-                tooltip: 'Add New Item',
-                child: const Icon(Icons.add),
-              ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: screenHeight * 0.1),
             ),
           ],
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
+        floatingActionButton: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: _showFab ? 1.0 : 0.0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                    right: screenWidth * 0.04, bottom: screenHeight * 0.01),
+                child: FloatingActionButton(
+                  heroTag: "templates",
+                  mini: true,
+                  onPressed: _showTemplateDialog,
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                  tooltip: 'Add from Templates',
+                  child: const Icon(Icons.list_alt),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.01),
+              Padding(
+                padding: EdgeInsets.only(
+                    right: screenWidth * 0.04, bottom: screenHeight * 0.04),
+                child: FloatingActionButton(
+                  heroTag: "add",
+                  onPressed: _showAddItemDialog,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  tooltip: 'Add New Item',
+                  child: const Icon(Icons.add),
+                ),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      );
+    }
 }
 
 enum Priority { low, medium, high }

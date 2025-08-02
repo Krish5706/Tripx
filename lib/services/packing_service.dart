@@ -96,42 +96,49 @@ class PackingService {
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   // Initialize database tables for packing items
-  Future<void> initializePackingTables() async {
+  Future<void> initializePackingTables({bool clearExisting = false}) async {
     final db = await _dbHelper.database;
     
     try {
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS packing_items (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          category TEXT NOT NULL,
-          is_packed INTEGER NOT NULL DEFAULT 0,
-          quantity INTEGER NOT NULL DEFAULT 1,
-          priority INTEGER NOT NULL DEFAULT 1,
-          user_id INTEGER NOT NULL,
-          trip_id INTEGER,
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-      ''');
+      await db.transaction((txn) async {
+        await txn.execute('''
+          CREATE TABLE IF NOT EXISTS packing_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            is_packed INTEGER NOT NULL DEFAULT 0,
+            quantity INTEGER NOT NULL DEFAULT 1,
+            priority INTEGER NOT NULL DEFAULT 1,
+            user_id INTEGER NOT NULL,
+            trip_id INTEGER,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+          )
+        ''');
 
-      await db.execute('''
-        CREATE INDEX IF NOT EXISTS idx_packing_items_user_id 
-        ON packing_items (user_id)
-      ''');
+        await txn.execute('''
+          CREATE INDEX IF NOT EXISTS idx_packing_items_user_id 
+          ON packing_items (user_id)
+        ''');
 
-      await db.execute('''
-        CREATE INDEX IF NOT EXISTS idx_packing_items_trip_id 
-        ON packing_items (trip_id)
-      ''');
+        await txn.execute('''
+          CREATE INDEX IF NOT EXISTS idx_packing_items_trip_id 
+          ON packing_items (trip_id)
+        ''');
 
-      await db.execute('''
-        CREATE INDEX IF NOT EXISTS idx_packing_items_category 
-        ON packing_items (category)
-      ''');
+        await txn.execute('''
+          CREATE INDEX IF NOT EXISTS idx_packing_items_category 
+          ON packing_items (category)
+        ''');
 
-      log('Packing tables initialized successfully', name: 'PackingService');
+        if (clearExisting) {
+          await txn.delete('packing_items');
+          log('Cleared existing packing items during initialization', name: 'PackingService');
+        }
+      });
+
+      log('Packing tables initialized successfully${clearExisting ? ' and cleared' : ''}', name: 'PackingService');
     } catch (e) {
       log('Error initializing packing tables: $e', name: 'PackingService');
       rethrow;
@@ -436,22 +443,37 @@ class PackingService {
     final db = await _dbHelper.database;
     
     try {
-      String whereClause = 'user_id = ?';
-      List<dynamic> whereArgs = [userId];
-      
-      if (tripId != null) {
-        whereClause += ' AND trip_id = ?';
-        whereArgs.add(tripId);
-      }
+      await db.transaction((txn) async {
+        String whereClause = 'user_id = ?';
+        List<dynamic> whereArgs = [userId];
+        
+        if (tripId != null) {
+          whereClause += ' AND trip_id = ?';
+          whereArgs.add(tripId);
+        }
 
-      final rowsAffected = await db.delete(
-        'packing_items',
-        where: whereClause,
-        whereArgs: whereArgs,
-      );
+        final rowsAffected = await txn.delete(
+          'packing_items',
+          where: whereClause,
+          whereArgs: whereArgs,
+        );
 
-      log('Cleared $rowsAffected packing items', name: 'PackingService');
-      return rowsAffected > 0;
+        // Verify that no items remain
+        final remaining = await txn.rawQuery(
+          'SELECT COUNT(*) as count FROM packing_items WHERE $whereClause',
+          whereArgs,
+        );
+
+        final remainingCount = remaining.first['count'] as int;
+        if (remainingCount > 0) {
+          log('Error: $remainingCount items remain after clearing', name: 'PackingService');
+          return false;
+        }
+
+        log('Cleared $rowsAffected packing items', name: 'PackingService');
+        return rowsAffected > 0;
+      });
+      return true;
     } catch (e) {
       log('Error clearing packing items: $e', name: 'PackingService');
       return false;
