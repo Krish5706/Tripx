@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import '../../services/packing_service.dart';
 
 class PackingListScreen extends StatefulWidget {
   const PackingListScreen({super.key});
@@ -16,6 +16,7 @@ class _PackingListScreenState extends State<PackingListScreen>
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
 
+  final PackingService _packingService = PackingService();
   List<PackingItem> _allItems = [];
   List<PackingItem> _filteredItems = [];
   String _selectedCategory = 'All';
@@ -25,172 +26,112 @@ class _PackingListScreenState extends State<PackingListScreen>
   bool _showFab = true;
   Timer? _scrollTimer;
 
-  final Map<String, List<Map<String, String>>> _categoryTemplates = {
-    'Clothing': [
-      {'name': 'T-shirts', 'description': 'Casual tops'},
-      {'name': 'Pants/Jeans', 'description': 'Everyday bottoms'},
-      {'name': 'Underwear', 'description': 'Daily essentials'},
-      {'name': 'Socks', 'description': 'Multiple pairs'},
-      {'name': 'Pajamas', 'description': 'Sleepwear'},
-      {'name': 'Jacket/Coat', 'description': 'Weather-appropriate outerwear'},
-      {'name': 'Shoes', 'description': 'Comfortable footwear'},
-      {'name': 'Sandals', 'description': 'Light footwear'},
-      {'name': 'Dress/Formal wear', 'description': 'For special occasions'},
-      {'name': 'Swimwear', 'description': 'For swimming'},
-      {'name': 'Hat/Cap', 'description': 'Sun protection'},
-      {'name': 'Scarf/Gloves', 'description': 'Cold weather gear'},
-    ],
-    'Toiletries': [
-      {'name': 'Toothbrush', 'description': 'Dental hygiene'},
-      {'name': 'Toothpaste', 'description': 'Dental hygiene'},
-      {'name': 'Shampoo', 'description': 'Hair cleaning'},
-      {'name': 'Soap/Body wash', 'description': 'Body cleaning'},
-      {'name': 'Deodorant', 'description': 'Odor protection'},
-      {'name': 'Sunscreen', 'description': 'UV protection'},
-      {'name': 'Medications', 'description': 'Prescription or OTC'},
-      {'name': 'Contact lenses', 'description': 'Vision correction'},
-      {'name': 'Razor', 'description': 'Shaving'},
-      {'name': 'Makeup', 'description': 'Cosmetics'},
-      {'name': 'Hairbrush/Comb', 'description': 'Hair grooming'},
-      {'name': 'Sanitary products', 'description': 'Personal hygiene'},
-    ],
-    'Electronics': [
-      {'name': 'Phone charger', 'description': 'Device charging'},
-      {'name': 'Power bank', 'description': 'Portable power'},
-      {'name': 'Camera', 'description': 'Photography'},
-      {'name': 'Headphones', 'description': 'Audio listening'},
-      {'name': 'Laptop/Tablet', 'description': 'Work/entertainment'},
-      {'name': 'Travel adapter', 'description': 'International plugs'},
-      {'name': 'Cables', 'description': 'Charging/data transfer'},
-      {'name': 'Memory cards', 'description': 'Storage'},
-      {'name': 'Portable speaker', 'description': 'Audio playback'},
-      {'name': 'Smartwatch', 'description': 'Fitness/time tracking'},
-    ],
-    'Documents': [
-      {'name': 'Passport', 'description': 'International travel ID'},
-      {'name': 'ID/Driver\'s license', 'description': 'Personal ID'},
-      {'name': 'Tickets', 'description': 'Travel tickets'},
-      {'name': 'Hotel confirmations', 'description': 'Accommodation proof'},
-      {'name': 'Travel insurance', 'description': 'Trip protection'},
-      {'name': 'Visa', 'description': 'Travel authorization'},
-      {'name': 'Credit cards', 'description': 'Payment method'},
-      {'name': 'Cash', 'description': 'Local currency'},
-      {'name': 'Emergency contacts', 'description': 'Safety contacts'},
-      {'name': 'Itinerary', 'description': 'Travel plan'},
-      {'name': 'Medical records', 'description': 'Health documentation'},
-    ],
-    'Essentials': [
-      {'name': 'Wallet', 'description': 'Money/ID holder'},
-      {'name': 'Keys', 'description': 'Home/car keys'},
-      {'name': 'Sunglasses', 'description': 'Eye protection'},
-      {'name': 'Watch', 'description': 'Timekeeping'},
-      {'name': 'Umbrella', 'description': 'Rain protection'},
-      {'name': 'First aid kit', 'description': 'Basic medical supplies'},
-      {'name': 'Snacks', 'description': 'Quick bites'},
-      {'name': 'Water bottle', 'description': 'Hydration'},
-      {'name': 'Travel pillow', 'description': 'Comfort during travel'},
-      {'name': 'Eye mask', 'description': 'Sleep aid'},
-      {'name': 'Notebook/Pen', 'description': 'For notes'},
-      {'name': 'Reusable bag', 'description': 'Shopping/travel'},
-    ],
-    'Baby Essentials': [
-      {'name': 'Diapers', 'description': 'For newborn hygiene'},
-      {'name': 'Baby wipes', 'description': 'Cleaning wipes'},
-      {'name': 'Formula/Breast pump', 'description': 'Feeding essentials'},
-      {'name': 'Bottles', 'description': 'For feeding'},
-      {'name': 'Pacifier', 'description': 'Soothing item'},
-      {'name': 'Baby clothes', 'description': 'Onesies, socks, hats'},
-      {'name': 'Blankets', 'description': 'Warmth/comfort'},
-      {'name': 'Stroller', 'description': 'Baby transport'},
-      {'name': 'Diaper bag', 'description': 'Storage for baby items'},
-      {'name': 'Baby food', 'description': 'Purees/snacks'},
-      {'name': 'Baby monitor', 'description': 'Safety monitoring'},
-      {'name': 'Teething toys', 'description': 'For teething relief'},
-    ],
-    'Children\'s Items': [
-      {'name': 'Toys', 'description': 'Favorite play items'},
-      {'name': 'Books', 'description': 'Reading material'},
-      {'name': 'School supplies', 'description': 'Pencils, notebooks'},
-      {'name': 'Kids clothing', 'description': 'Age-appropriate clothes'},
-      {'name': 'Snacks', 'description': 'Child-friendly foods'},
-      {'name': 'Water bottle', 'description': 'Kid-sized hydration'},
-      {'name': 'Backpack', 'description': 'For carrying items'},
-      {'name': 'Sunscreen', 'description': 'Child-safe UV protection'},
-      {'name': 'Hat', 'description': 'Sun protection'},
-      {'name': 'Comfort item', 'description': 'Stuffed animal/blanket'},
-      {'name': 'Activity book', 'description': 'Puzzles/games'},
-    ],
-    'Elderly Care': [
-      {'name': 'Medications', 'description': 'Prescription drugs'},
-      {'name': 'Mobility aid', 'description': 'Cane/walker'},
-      {'name': 'Hearing aid', 'description': 'Hearing support'},
-      {'name': 'Glasses', 'description': 'Vision correction'},
-      {'name': 'Medical alert device', 'description': 'Emergency alert'},
-      {'name': 'Comfortable shoes', 'description': 'Non-slip footwear'},
-      {'name': 'Incontinence products', 'description': 'Hygiene needs'},
-      {'name': 'Pill organizer', 'description': 'Medication management'},
-      {'name': 'Warm clothing', 'description': 'Layered clothing'},
-      {'name': 'Blood pressure monitor', 'description': 'Health monitoring'},
-      {'name': 'Thermos', 'description': 'Hot/cold drinks'},
-    ],
-  };
-
+  // Category definitions for filtering
   final List<String> _categories = [
     'All',
     'Clothing',
     'Toiletries',
     'Electronics',
     'Documents',
-    'Essentials',
-    'Baby Essentials',
-    'Children\'s Items',
-    'Elderly Care',
+    'Medications',
+    'Accessories',
+    'Other',
   ];
+
+  // Template items organized by category
+  final Map<String, List<Map<String, String>>> _categoryTemplates = {
+    'Clothing': [
+      {'name': 'T-shirts', 'description': 'Essential tops for your trip'},
+      {'name': 'Pants', 'description': 'Comfortable bottoms'},
+      {'name': 'Underwear', 'description': 'Daily essentials'},
+      {'name': 'Socks', 'description': 'Keep your feet comfortable'},
+      {'name': 'Shoes', 'description': 'Footwear for different activities'},
+      {'name': 'Jacket', 'description': 'For cooler weather or air travel'},
+      {'name': 'Pajamas', 'description': 'Comfortable sleepwear'},
+      {'name': 'Swimwear', 'description': 'For beach or pool activities'},
+    ],
+    'Toiletries': [
+      {'name': 'Toothbrush', 'description': 'Dental hygiene'},
+      {'name': 'Toothpaste', 'description': 'Dental care'},
+      {'name': 'Shampoo', 'description': 'Hair care'},
+      {'name': 'Soap', 'description': 'Body wash'},
+      {'name': 'Deodorant', 'description': 'Personal hygiene'},
+      {'name': 'Razor', 'description': 'Shaving needs'},
+      {'name': 'Towel', 'description': 'For drying off'},
+    ],
+    'Electronics': [
+      {'name': 'Phone', 'description': 'Communication device'},
+      {'name': 'Charger', 'description': 'Power adapter for your phone'},
+      {'name': 'Power bank', 'description': 'Portable charging device'},
+      {'name': 'Camera', 'description': 'For capturing memories'},
+      {'name': 'Laptop', 'description': 'Work or entertainment device'},
+      {'name': 'Headphones', 'description': 'Audio entertainment'},
+    ],
+    'Documents': [
+      {'name': 'Passport', 'description': 'Travel document'},
+      {'name': 'Visa', 'description': 'Entry permit'},
+      {'name': 'Travel insurance', 'description': 'Protection during travel'},
+      {'name': 'Flight tickets', 'description': 'Boarding passes and itinerary'},
+      {'name': 'Hotel reservations', 'description': 'Accommodation confirmations'},
+      {'name': 'Driver license', 'description': 'Identification'},
+    ],
+    'Medications': [
+      {'name': 'Prescriptions', 'description': 'Regular medications'},
+      {'name': 'Pain relievers', 'description': 'Headache or body pain relief'},
+      {'name': 'Allergy medication', 'description': 'For allergic reactions'},
+      {'name': 'First aid kit', 'description': 'Basic medical supplies'},
+    ],
+    'Accessories': [
+      {'name': 'Sunglasses', 'description': 'Eye protection'},
+      {'name': 'Hat', 'description': 'Sun protection'},
+      {'name': 'Backpack', 'description': 'Carry your items'},
+      {'name': 'Wallet', 'description': 'Money and cards holder'},
+      {'name': 'Watch', 'description': 'Timekeeping accessory'},
+    ],
+  };
+
+  // Default user ID - in a real app, this would come from authentication
+  final int _userId = 1;
+  final int? _tripId = null; // Can be set based on selected trip
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _initializeWithSampleData();
-    _filteredItems = List.from(_allItems);
+    _initializePackingData();
     _searchController.addListener(_filterItems);
 
     // Add scroll listener to control FAB visibility
     _scrollController.addListener(_onScroll);
   }
 
-  void _initializeWithSampleData() {
-    _allItems = [
-      PackingItem(
-        name: 'Passport',
-        category: 'Documents',
-        priority: Priority.high,
-      ),
-      PackingItem(
-        name: 'Phone charger',
-        category: 'Electronics',
-        priority: Priority.medium,
-      ),
-      PackingItem(name: 'T-shirts', category: 'Clothing', quantity: 3),
-      PackingItem(
-        name: 'Sunscreen',
-        category: 'Toiletries',
-        priority: Priority.medium,
-      ),
-      PackingItem(
-        name: 'Diapers',
-        category: 'Baby Essentials',
-        quantity: 10,
-        priority: Priority.high,
-      ),
-      PackingItem(name: 'Toys', category: 'Children\'s Items', quantity: 2),
-      PackingItem(
-        name: 'Medications',
-        category: 'Elderly Care',
-        priority: Priority.high,
-      ),
-    ];
-    _filterItems();
+  Future<void> _initializePackingData() async {
+    try {
+      // Initialize loading state
+
+      // Initialize the database tables
+      await _packingService.initializePackingTables();
+
+      // Load existing packing items for the user
+      final items = await _packingService.getPackingItems(_userId, tripId: _tripId);
+
+      if (mounted) {
+        setState(() {
+          _allItems = items;
+        });
+        _filterItems();
+      }
+    } catch (e) {
+      if (mounted) {
+        // Handle loading error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load packing items: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -209,12 +150,12 @@ class _PackingListScreenState extends State<PackingListScreen>
     );
   }
 
-  void _addItem(
+  Future<void> _addItem(
     String name,
     String category, {
     int quantity = 1,
     Priority priority = Priority.medium,
-  }) {
+  }) async {
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -239,35 +180,53 @@ class _PackingListScreenState extends State<PackingListScreen>
       return;
     }
 
-    setState(() {
-      _allItems.add(
-        PackingItem(
-          name: name.trim(),
-          category: category,
-          quantity: quantity.clamp(1, 99),
-          priority: priority,
-        ),
+    try {
+      final newItem = PackingItem(
+        name: name.trim(),
+        category: category,
+        quantity: quantity.clamp(1, 99),
+        priority: priority,
+        userId: _userId,
+        tripId: _tripId,
       );
-      _filterItems();
-    });
-    _itemController.clear();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Added $name to packing list',
-          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-        ),
-      ),
-    );
+
+      final itemId = await _packingService.addPackingItem(newItem);
+
+      if (itemId != null && mounted) {
+        final itemWithId = newItem.copyWith(id: itemId);
+        setState(() {
+          _allItems.add(itemWithId);
+          _filterItems();
+        });
+        _itemController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Added $name to packing list',
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add item: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _editItem(
+  Future<void> _editItem(
     int index,
     String name,
     String category,
     int quantity,
     Priority priority,
-  ) {
+  ) async {
     if (name.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -293,54 +252,133 @@ class _PackingListScreenState extends State<PackingListScreen>
       return;
     }
 
-    setState(() {
-      _filteredItems[index].name = name.trim();
-      _filteredItems[index].category = category;
-      _filteredItems[index].quantity = quantity.clamp(1, 99);
-      _filteredItems[index].priority = priority;
-      _filterItems();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Updated $name',
-          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-        ),
-      ),
-    );
+    try {
+      final updatedItem = _filteredItems[index].copyWith(
+        name: name.trim(),
+        category: category,
+        quantity: quantity.clamp(1, 99),
+        priority: priority,
+      );
+
+      final success = await _packingService.updatePackingItem(updatedItem);
+
+      if (success && mounted) {
+        setState(() {
+          _filteredItems[index] = updatedItem;
+          // Update in _allItems as well
+          final allIndex = _allItems.indexWhere((item) => item.id == updatedItem.id);
+          if (allIndex != -1) {
+            _allItems[allIndex] = updatedItem;
+          }
+          _filterItems();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Updated $name',
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update item: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _toggleItemPacked(int index) {
-    setState(() {
-      _filteredItems[index].isPacked = !_filteredItems[index].isPacked;
-    });
+  Future<void> _toggleItemPacked(int index) async {
+    try {
+      final updatedItem = _filteredItems[index].copyWith(
+        isPacked: !_filteredItems[index].isPacked,
+      );
+
+      final success = await _packingService.updatePackingItem(updatedItem);
+
+      if (success && mounted) {
+        setState(() {
+          _filteredItems[index] = updatedItem;
+          // Update in _allItems as well
+          final allIndex = _allItems.indexWhere((item) => item.id == updatedItem.id);
+          if (allIndex != -1) {
+            _allItems[allIndex] = updatedItem;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update item: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _deleteItem(int index) {
+  Future<void> _deleteItem(int index) async {
     String itemName = _filteredItems[index].name;
     PackingItem itemToDelete = _filteredItems[index];
-    setState(() {
-      _allItems.remove(itemToDelete);
-      _filterItems();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Deleted $itemName',
-          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-        ),
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: Theme.of(context).colorScheme.primary,
-          onPressed: () {
-            setState(() {
-              _allItems.add(itemToDelete);
-              _filterItems();
-            });
-          },
-        ),
-      ),
-    );
+
+    try {
+      final success = await _packingService.deletePackingItem(itemToDelete.id!, _userId);
+
+      if (success && mounted) {
+        setState(() {
+          _allItems.remove(itemToDelete);
+          _filterItems();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Deleted $itemName',
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+            ),
+            action: SnackBarAction(
+              label: 'Undo',
+              textColor: Theme.of(context).colorScheme.primary,
+              onPressed: () async {
+                try {
+                  final newId = await _packingService.addPackingItem(itemToDelete.copyWith(id: null));
+                  if (newId != null && mounted) {
+                    setState(() {
+                      _allItems.add(itemToDelete.copyWith(id: newId));
+                      _filterItems();
+                    });
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to restore item: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete item: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _filterItems() {
@@ -1288,23 +1326,4 @@ class _PackingListScreenState extends State<PackingListScreen>
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       );
     }
-}
-
-enum Priority { low, medium, high }
-
-class PackingItem {
-  String name;
-  String category;
-  bool isPacked;
-  int quantity;
-  Priority priority;
-  DateTime createdAt;
-
-  PackingItem({
-    required this.name,
-    required this.category,
-    this.isPacked = false,
-    this.quantity = 1,
-    this.priority = Priority.medium,
-  }) : createdAt = DateTime.now();
 }
