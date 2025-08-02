@@ -33,53 +33,215 @@ class _PackingListScreenState extends State<PackingListScreen>
     'Toiletries',
     'Electronics',
     'Documents',
-    'Medications',
+    'Essentials',
+    'Baby Essentials',
+    'Children\'s Items',
+    'Elderly Care',
+    'Couple Items',
+    'Business Travel',
+    'Adventure/Outdoor',
+    'Beach/Summer',
+    'Winter/Ski',
+    'Medical/Health',
+    'Photography',
+    'Sports/Fitness',
+    'Entertainment',
+    'Kitchen/Food',
     'Accessories',
-    'Other',
   ];
 
-  // Template items organized by category
+  // Category templates with predefined items
   final Map<String, List<Map<String, String>>> _categoryTemplates = {
     'Clothing': [
-      {'name': 'T-shirts', 'description': 'Essential tops for your trip'},
-      {'name': 'Pants', 'description': 'Comfortable bottoms'},
-      {'name': 'Underwear', 'description': 'Daily essentials'},
-      {'name': 'Socks', 'description': 'Keep your feet comfortable'},
-      {'name': 'Shoes', 'description': 'Footwear for different activities'},
-      {'name': 'Jacket', 'description': 'For cooler weather or air travel'},
-      {'name': 'Pajamas', 'description': 'Comfortable sleepwear'},
-      {'name': 'Swimwear', 'description': 'For beach or pool activities'},
+      {'name': 'T-shirts', 'description': 'Casual wear'},
+      {'name': 'Jeans', 'description': 'Comfortable pants'},
+      {'name': 'Underwear', 'description': 'Essential undergarments'},
+      {'name': 'Socks', 'description': 'Foot comfort'},
+      {'name': 'Jacket', 'description': 'Weather protection'},
+      {'name': 'Pajamas', 'description': 'Sleepwear'},
+      {'name': 'Shoes', 'description': 'Footwear'},
+      {'name': 'Dress', 'description': 'Formal/casual dress'},
+      {'name': 'Shorts', 'description': 'Summer wear'},
+      {'name': 'Sweater', 'description': 'Warm clothing'},
     ],
     'Toiletries': [
       {'name': 'Toothbrush', 'description': 'Dental hygiene'},
       {'name': 'Toothpaste', 'description': 'Dental care'},
       {'name': 'Shampoo', 'description': 'Hair care'},
-      {'name': 'Soap', 'description': 'Body wash'},
+      {'name': 'Conditioner', 'description': 'Hair treatment'},
+      {'name': 'Body Wash', 'description': 'Body cleaning'},
       {'name': 'Deodorant', 'description': 'Personal hygiene'},
-      {'name': 'Razor', 'description': 'Shaving needs'},
-      {'name': 'Towel', 'description': 'For drying off'},
+      {'name': 'Towel', 'description': 'Drying'},
+      {'name': 'Razor', 'description': 'Shaving'},
+      {'name': 'Moisturizer', 'description': 'Skin care'},
+      {'name': 'Sunscreen', 'description': 'Sun protection'},
     ],
     'Electronics': [
-      {'name': 'Phone', 'description': 'Communication device'},
-      {'name': 'Charger', 'description': 'Power adapter for your phone'},
-      {'name': 'Power bank', 'description': 'Portable charging device'},
-      {'name': 'Camera', 'description': 'For capturing memories'},
-      {'name': 'Laptop', 'description': 'Work or entertainment device'},
-      {'name': 'Headphones', 'description': 'Audio entertainment'},
+      {'name': 'Phone Charger', 'description': 'Device charging'},
+      {'name': 'Laptop', 'description': 'Computing device'},
+      {'name': 'Camera', 'description': 'Photography'},
+      {'name': 'Headphones', 'description': 'Audio device'},
+      {'name': 'Power Bank', 'description': 'Portable charging'},
+      {'name': 'Tablet', 'description': 'Portable computer'},
+      {'name': 'E-reader', 'description': 'Digital books'},
+      {'name': 'Travel Adapter', 'description': 'Power conversion'},
     ],
     'Documents': [
-      {'name': 'Passport', 'description': 'Travel document'},
+      {'name': 'Passport', 'description': 'Travel identification'},
+      {'name': 'Tickets', 'description': 'Travel documents'},
+      {'name': 'ID Card', 'description': 'Identification'},
+      {'name': 'Insurance', 'description': 'Travel insurance'},
       {'name': 'Visa', 'description': 'Entry permit'},
-      {'name': 'Travel insurance', 'description': 'Protection during travel'},
-      {'name': 'Flight tickets', 'description': 'Boarding passes and itinerary'},
-      {'name': 'Hotel reservations', 'description': 'Accommodation confirmations'},
-      {'name': 'Driver license', 'description': 'Identification'},
+      {'name': 'Driver\'s License', 'description': 'Driving permit'},
+      {'name': 'Hotel Reservations', 'description': 'Booking confirmations'},
+      {'name': 'Emergency Contacts', 'description': 'Important numbers'},
     ],
-    'Medications': [
-      {'name': 'Prescriptions', 'description': 'Regular medications'},
-      {'name': 'Pain relievers', 'description': 'Headache or body pain relief'},
-      {'name': 'Allergy medication', 'description': 'For allergic reactions'},
-      {'name': 'First aid kit', 'description': 'Basic medical supplies'},
+    'Essentials': [
+      {'name': 'Money', 'description': 'Currency'},
+      {'name': 'Credit Cards', 'description': 'Payment cards'},
+      {'name': 'Keys', 'description': 'Access items'},
+      {'name': 'Medications', 'description': 'Health items'},
+      {'name': 'First Aid Kit', 'description': 'Emergency medical'},
+      {'name': 'Snacks', 'description': 'Food items'},
+      {'name': 'Water Bottle', 'description': 'Hydration'},
+      {'name': 'Hand Sanitizer', 'description': 'Hygiene'},
+    ],
+    'Baby Essentials': [
+      {'name': 'Diapers', 'description': 'Baby hygiene'},
+      {'name': 'Baby Wipes', 'description': 'Cleaning'},
+      {'name': 'Baby Formula', 'description': 'Feeding'},
+      {'name': 'Baby Bottles', 'description': 'Feeding bottles'},
+      {'name': 'Baby Clothes', 'description': 'Infant clothing'},
+      {'name': 'Pacifier', 'description': 'Soothing item'},
+      {'name': 'Baby Food', 'description': 'Nutrition'},
+      {'name': 'Stroller', 'description': 'Transportation'},
+      {'name': 'Car Seat', 'description': 'Safety'},
+      {'name': 'Baby Blanket', 'description': 'Comfort'},
+      {'name': 'Diaper Bag', 'description': 'Storage'},
+      {'name': 'Baby Monitor', 'description': 'Safety device'},
+    ],
+    'Children\'s Items': [
+      {'name': 'Toys', 'description': 'Entertainment'},
+      {'name': 'Coloring Books', 'description': 'Activity books'},
+      {'name': 'Crayons', 'description': 'Art supplies'},
+      {'name': 'Games', 'description': 'Travel games'},
+      {'name': 'Tablet/iPad', 'description': 'Digital entertainment'},
+      {'name': 'Snacks', 'description': 'Kid-friendly food'},
+      {'name': 'Extra Clothes', 'description': 'Backup clothing'},
+      {'name': 'Comfort Item', 'description': 'Stuffed animal/blanket'},
+      {'name': 'Children\'s Books', 'description': 'Reading material'},
+    ],
+    'Elderly Care': [
+      {'name': 'Prescription Medications', 'description': 'Daily medicines'},
+      {'name': 'Pill Organizer', 'description': 'Medication management'},
+      {'name': 'Walking Cane', 'description': 'Mobility aid'},
+      {'name': 'Compression Socks', 'description': 'Circulation help'},
+      {'name': 'Reading Glasses', 'description': 'Vision aid'},
+      {'name': 'Hearing Aid', 'description': 'Hearing assistance'},
+      {'name': 'Blood Pressure Monitor', 'description': 'Health monitoring'},
+      {'name': 'Comfortable Shoes', 'description': 'Supportive footwear'},
+      {'name': 'Cushion', 'description': 'Comfort support'},
+    ],
+    'Couple Items': [
+      {'name': 'Romantic Dinner Outfit', 'description': 'Special occasion wear'},
+      {'name': 'Perfume/Cologne', 'description': 'Fragrance'},
+      {'name': 'Jewelry', 'description': 'Accessories'},
+      {'name': 'Camera for Photos', 'description': 'Memory capture'},
+      {'name': 'Massage Oil', 'description': 'Relaxation'},
+      {'name': 'Wine/Champagne', 'description': 'Celebration'},
+      {'name': 'Candles', 'description': 'Ambiance'},
+      {'name': 'Lingerie', 'description': 'Intimate wear'},
+      {'name': 'Couple\'s Games', 'description': 'Entertainment'},
+    ],
+    'Business Travel': [
+      {'name': 'Business Suit', 'description': 'Professional attire'},
+      {'name': 'Dress Shoes', 'description': 'Formal footwear'},
+      {'name': 'Laptop Bag', 'description': 'Professional carrier'},
+      {'name': 'Business Cards', 'description': 'Networking'},
+      {'name': 'Presentation Materials', 'description': 'Work documents'},
+      {'name': 'Portable Printer', 'description': 'Document printing'},
+      {'name': 'Conference Badge', 'description': 'Event access'},
+      {'name': 'Professional Portfolio', 'description': 'Document organizer'},
+    ],
+    'Adventure/Outdoor': [
+      {'name': 'Hiking Boots', 'description': 'Trail footwear'},
+      {'name': 'Backpack', 'description': 'Gear carrier'},
+      {'name': 'Sleeping Bag', 'description': 'Outdoor sleeping'},
+      {'name': 'Tent', 'description': 'Shelter'},
+      {'name': 'Flashlight', 'description': 'Illumination'},
+      {'name': 'Compass', 'description': 'Navigation'},
+      {'name': 'Multi-tool', 'description': 'Utility tool'},
+      {'name': 'Water Purification', 'description': 'Clean water'},
+      {'name': 'Energy Bars', 'description': 'Quick nutrition'},
+      {'name': 'Rain Gear', 'description': 'Weather protection'},
+    ],
+    'Beach/Summer': [
+      {'name': 'Swimsuit', 'description': 'Swimming attire'},
+      {'name': 'Beach Towel', 'description': 'Drying/lounging'},
+      {'name': 'Flip Flops', 'description': 'Beach footwear'},
+      {'name': 'Sunscreen', 'description': 'UV protection'},
+      {'name': 'Beach Umbrella', 'description': 'Shade'},
+      {'name': 'Cooler', 'description': 'Food/drink storage'},
+      {'name': 'Snorkel Gear', 'description': 'Water exploration'},
+      {'name': 'Beach Ball', 'description': 'Entertainment'},
+      {'name': 'Waterproof Phone Case', 'description': 'Device protection'},
+    ],
+    'Winter/Ski': [
+      {'name': 'Ski Jacket', 'description': 'Winter sports wear'},
+      {'name': 'Thermal Underwear', 'description': 'Base layer'},
+      {'name': 'Gloves', 'description': 'Hand warmth'},
+      {'name': 'Winter Hat', 'description': 'Head warmth'},
+      {'name': 'Snow Boots', 'description': 'Winter footwear'},
+      {'name': 'Ski Goggles', 'description': 'Eye protection'},
+      {'name': 'Hand Warmers', 'description': 'Heat packs'},
+      {'name': 'Scarf', 'description': 'Neck warmth'},
+      {'name': 'Wool Socks', 'description': 'Warm feet'},
+    ],
+    'Medical/Health': [
+      {'name': 'Prescription Drugs', 'description': 'Required medications'},
+      {'name': 'Thermometer', 'description': 'Temperature check'},
+      {'name': 'Band-aids', 'description': 'Wound care'},
+      {'name': 'Pain Relievers', 'description': 'Pain management'},
+      {'name': 'Antacids', 'description': 'Stomach relief'},
+      {'name': 'Allergy Medicine', 'description': 'Allergy treatment'},
+      {'name': 'Medical Insurance Card', 'description': 'Healthcare access'},
+      {'name': 'Emergency Medical Info', 'description': 'Health details'},
+    ],
+    'Photography': [
+      {'name': 'DSLR Camera', 'description': 'Professional camera'},
+      {'name': 'Extra Lenses', 'description': 'Photography options'},
+      {'name': 'Memory Cards', 'description': 'Storage'},
+      {'name': 'Camera Battery', 'description': 'Power source'},
+      {'name': 'Tripod', 'description': 'Camera support'},
+      {'name': 'Camera Bag', 'description': 'Equipment protection'},
+      {'name': 'Lens Cleaning Kit', 'description': 'Maintenance'},
+    ],
+    'Sports/Fitness': [
+      {'name': 'Workout Clothes', 'description': 'Exercise attire'},
+      {'name': 'Running Shoes', 'description': 'Athletic footwear'},
+      {'name': 'Water Bottle', 'description': 'Hydration'},
+      {'name': 'Fitness Tracker', 'description': 'Activity monitor'},
+      {'name': 'Yoga Mat', 'description': 'Exercise surface'},
+      {'name': 'Protein Bars', 'description': 'Nutrition'},
+      {'name': 'Gym Towel', 'description': 'Sweat management'},
+    ],
+    'Entertainment': [
+      {'name': 'Books', 'description': 'Reading material'},
+      {'name': 'Magazines', 'description': 'Light reading'},
+      {'name': 'Playing Cards', 'description': 'Card games'},
+      {'name': 'Board Games', 'description': 'Group entertainment'},
+      {'name': 'Music Player', 'description': 'Audio entertainment'},
+      {'name': 'Downloaded Movies', 'description': 'Video content'},
+      {'name': 'Puzzle Books', 'description': 'Brain teasers'},
+    ],
+    'Kitchen/Food': [
+      {'name': 'Travel Mug', 'description': 'Beverage container'},
+      {'name': 'Utensils', 'description': 'Eating tools'},
+      {'name': 'Cooler Bag', 'description': 'Food storage'},
+      {'name': 'Snacks', 'description': 'Quick food'},
+      {'name': 'Coffee/Tea', 'description': 'Beverages'},
+      {'name': 'Can Opener', 'description': 'Food preparation'},
+      {'name': 'Napkins', 'description': 'Cleaning'},
     ],
     'Accessories': [
       {'name': 'Sunglasses', 'description': 'Eye protection'},
@@ -87,6 +249,9 @@ class _PackingListScreenState extends State<PackingListScreen>
       {'name': 'Backpack', 'description': 'Carry your items'},
       {'name': 'Wallet', 'description': 'Money and cards holder'},
       {'name': 'Watch', 'description': 'Timekeeping accessory'},
+      {'name': 'Belt', 'description': 'Clothing accessory'},
+      {'name': 'Jewelry', 'description': 'Personal adornment'},
+      {'name': 'Scarf', 'description': 'Fashion/warmth'},
     ],
   };
 
@@ -788,6 +953,28 @@ class _PackingListScreenState extends State<PackingListScreen>
         return Icons.toys;
       case 'Elderly Care':
         return Icons.elderly;
+      case 'Couple Items':
+        return Icons.favorite;
+      case 'Business Travel':
+        return Icons.business_center;
+      case 'Adventure/Outdoor':
+        return Icons.hiking;
+      case 'Beach/Summer':
+        return Icons.beach_access;
+      case 'Winter/Ski':
+        return Icons.ac_unit;
+      case 'Medical/Health':
+        return Icons.medical_services;
+      case 'Photography':
+        return Icons.camera_alt;
+      case 'Sports/Fitness':
+        return Icons.fitness_center;
+      case 'Entertainment':
+        return Icons.games;
+      case 'Kitchen/Food':
+        return Icons.restaurant;
+      case 'Accessories':
+        return Icons.watch;
       default:
         return Icons.category;
     }
