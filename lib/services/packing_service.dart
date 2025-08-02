@@ -298,6 +298,33 @@ class PackingService {
     }
   }
 
+  // Clear all packing items for a user
+  Future<bool> clearAllPackingItems(int userId, {int? tripId}) async {
+    final db = await _dbHelper.database;
+    
+    try {
+      String whereClause = 'user_id = ?';
+      List<dynamic> whereArgs = [userId];
+      
+      if (tripId != null) {
+        whereClause += ' AND trip_id = ?';
+        whereArgs.add(tripId);
+      }
+      
+      final rowsAffected = await db.delete(
+        'packing_items',
+        where: whereClause,
+        whereArgs: whereArgs,
+      );
+      
+      log('Cleared $rowsAffected packing items for user $userId', name: 'PackingService');
+      return true;
+    } catch (e) {
+      log('Error clearing packing items: $e', name: 'PackingService');
+      return false;
+    }
+  }
+
   // Get packing statistics
   Future<Map<String, dynamic>> getPackingStats(int userId, {int? tripId}) async {
     final db = await _dbHelper.database;
@@ -438,47 +465,7 @@ class PackingService {
     }
   }
 
-  // Clear all packing items for a user
-  Future<bool> clearAllPackingItems(int userId, {int? tripId}) async {
-    final db = await _dbHelper.database;
-    
-    try {
-      await db.transaction((txn) async {
-        String whereClause = 'user_id = ?';
-        List<dynamic> whereArgs = [userId];
-        
-        if (tripId != null) {
-          whereClause += ' AND trip_id = ?';
-          whereArgs.add(tripId);
-        }
 
-        final rowsAffected = await txn.delete(
-          'packing_items',
-          where: whereClause,
-          whereArgs: whereArgs,
-        );
-
-        // Verify that no items remain
-        final remaining = await txn.rawQuery(
-          'SELECT COUNT(*) as count FROM packing_items WHERE $whereClause',
-          whereArgs,
-        );
-
-        final remainingCount = remaining.first['count'] as int;
-        if (remainingCount > 0) {
-          log('Error: $remainingCount items remain after clearing', name: 'PackingService');
-          return false;
-        }
-
-        log('Cleared $rowsAffected packing items', name: 'PackingService');
-        return rowsAffected > 0;
-      });
-      return true;
-    } catch (e) {
-      log('Error clearing packing items: $e', name: 'PackingService');
-      return false;
-    }
-  }
 
   // Get unique categories for a user
   Future<List<String>> getUserCategories(int userId, {int? tripId}) async {

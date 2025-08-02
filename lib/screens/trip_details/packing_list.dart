@@ -900,22 +900,53 @@ class _PackingListScreenState extends State<PackingListScreen>
                                       color: Theme.of(context).colorScheme.primary)),
                             ),
                             TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _allItems.clear();
-                                  _filterItems();
-                                });
+                              onPressed: () async {
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'All items cleared',
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).colorScheme.onPrimary),
-                                    ),
-                                  ),
-                                );
+                                try {
+                                  final success = await _packingService.clearAllPackingItems(_userId, tripId: _tripId);
+                                  
+                                  if (success && mounted) {
+                                    setState(() {
+                                      _allItems.clear();
+                                      _filterItems();
+                                    });
+                                    
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'All items cleared successfully',
+                                          style: TextStyle(
+                                              color: Theme.of(context).colorScheme.onPrimary),
+                                        ),
+                                        backgroundColor: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Failed to clear items',
+                                          style: TextStyle(
+                                              color: Theme.of(context).colorScheme.onError),
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Error clearing items: $e',
+                                          style: TextStyle(
+                                              color: Theme.of(context).colorScheme.onError),
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                               child: Text(
                                 'Clear',
