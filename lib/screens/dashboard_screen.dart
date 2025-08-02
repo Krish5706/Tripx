@@ -27,7 +27,7 @@ class DashboardScreen extends StatelessWidget {
         icon: Icons.calendar_today,
         color: Colors.orange,
         onTap: () {
-          Navigator.pushNamed(context, '/schedule');
+          Navigator.pushNamed(context, '/trip_selection');
         },
       ),
       _DashboardItem(

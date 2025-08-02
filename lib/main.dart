@@ -9,7 +9,10 @@ import 'package:tripx/screens/splash_screen.dart';
 import 'package:tripx/services/db_helper.dart';
 import 'package:tripx/screens/trip_details/notes.dart';
 import 'package:tripx/screens/trip_details/packing_list.dart';
-import 'package:tripx/screens/trip_details/expenses.dart'; // Added import
+import 'package:tripx/screens/trip_details/expenses.dart'; 
+import 'package:tripx/screens/trip_details/schedule.dart'; 
+import 'package:tripx/screens/trip_selection_screen.dart'; 
+import 'package:tripx/screens/create_trip_screen.dart'; 
 
 void main() {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
@@ -63,7 +66,26 @@ class _MyAppState extends State<MyApp> {
         // Future screens can be added below
         // '/destination': (context) => const DestinationIdeasScreen(),
         // '/trip_planner': (context) => const CreateTripScreen(),
-        // '/schedule': (context) => const ScheduleScreen(),
+        '/trip_selection': (context) => const TripSelectionScreen(),
+        '/create_trip': (context) => const CreateTripScreen(),
+        '/schedule': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          if (args == null) {
+            // Fallback if no arguments provided - redirect to dashboard
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacementNamed(context, '/dashboard');
+            });
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          return ScheduleScreen(
+            tripId: args['tripId'] as int,
+            tripName: args['tripName'] as String,
+          );
+        },
         '/packing_list': (context) => const PackingListScreen(),
         '/notes': (context) => const NotesScreen(),
         '/expenses': (context) => const ExpenseScreen(), // Added route
