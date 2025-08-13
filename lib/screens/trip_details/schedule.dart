@@ -128,7 +128,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           children: [
             Text(
               'Schedule',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20),
             ),
             Text(
               widget.tripName,

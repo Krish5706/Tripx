@@ -14,22 +14,32 @@ class DashboardScreen extends StatelessWidget {
           Navigator.pushNamed(context, '/destination');
         },
       ),
+      // _DashboardItem(
+      //   title: 'Trip Planner',
+      //   icon: Icons.map,
+      //   color: Colors.teal,
+      //   onTap: () {
+      //     Navigator.pushNamed(context, '/trip_planner');
+      //   },
+      // ),
+      
       _DashboardItem(
         title: 'Trip Planner',
         icon: Icons.map,
         color: Colors.teal,
         onTap: () {
-          Navigator.pushNamed(context, '/trip_planner');
-        },
-      ),
-      _DashboardItem(
-        title: 'Daily Schedule',
-        icon: Icons.calendar_today,
-        color: Colors.orange,
-        onTap: () {
           Navigator.pushNamed(context, '/trip_selection');
         },
       ),
+
+      // _DashboardItem(
+      //   title: 'Daily Schedule',
+      //   icon: Icons.calendar_today,
+      //   color: Colors.orange,
+      //   onTap: () {
+      //     Navigator.pushNamed(context, '/trip_selection');
+      //   },
+      // ),
       _DashboardItem(
         title: 'Packing List',
         icon: Icons.checklist,

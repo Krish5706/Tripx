@@ -99,10 +99,15 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Travel Diary'),
-        backgroundColor: Colors.blue[600],
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         elevation: 0,
       ),
       body: Container(
@@ -110,7 +115,9 @@ class _NotesScreenState extends State<NotesScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue[100]!, Colors.blue[50]!],
+            colors: isDark
+                ? [Colors.grey[900]!, Colors.black]
+                : [Colors.blue[100]!, Colors.blue[50]!],
           ),
         ),
         child: Padding(
@@ -119,6 +126,7 @@ class _NotesScreenState extends State<NotesScreen> {
             children: [
               Card(
                 elevation: 4,
+                color: colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -133,26 +141,31 @@ class _NotesScreenState extends State<NotesScreen> {
                           decoration: InputDecoration(
                             labelText: 'New Travel Memory',
                             hintText: 'Jot down your adventure...',
+                            labelStyle: TextStyle(color: colorScheme.onSurface),
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: colorScheme.surfaceVariant,
                           ),
+                          style: TextStyle(color: colorScheme.onSurface),
+                          cursorColor: colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: _addNote,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[600],
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 16),
                         ),
-                        child: const Icon(Icons.add, color: Colors.white),
+                        child: const Icon(Icons.add),
                       ),
                     ],
                   ),
@@ -172,13 +185,15 @@ class _NotesScreenState extends State<NotesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.book, size: 80, color: const Color.fromARGB(255, 84, 140, 201)),
+                            Icon(Icons.book,
+                                size: 80,
+                                color: colorScheme.primary.withOpacity(0.7)),
                             const SizedBox(height: 10),
                             Text(
                               'No travel memories yet.\nStart writing your adventures!',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: colorScheme.onSurface.withOpacity(0.6),
                                 fontSize: 16,
                                 fontStyle: FontStyle.italic,
                               ),
@@ -195,6 +210,7 @@ class _NotesScreenState extends State<NotesScreen> {
                           final note = notes[index];
                           return Card(
                             elevation: 2,
+                            color: colorScheme.surface,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -202,21 +218,23 @@ class _NotesScreenState extends State<NotesScreen> {
                               contentPadding: const EdgeInsets.all(16),
                               title: Text(
                                 note.content,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               subtitle: Text(
                                 'Updated: ${_formatDate(note.timestamp)}',
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurface.withOpacity(0.6),
                                   fontSize: 12,
                                 ),
                               ),
                               onTap: () => _editNoteDialog(note),
                               trailing: IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red[400]),
+                                icon: Icon(Icons.delete,
+                                    color: Colors.red[400]),
                                 onPressed: () => _confirmDelete(note),
                               ),
                             ),

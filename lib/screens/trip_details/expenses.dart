@@ -16,7 +16,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
-  final List<Color> _chartColors = []; // Non-final due to dynamic addition
+  final List<Color> _chartColors = [];
 
   Future<void> _addExpense() async {
     final description = _descriptionController.text.trim();
@@ -86,7 +86,8 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
               final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
               final category = _categoryController.text.trim();
               if (description.isNotEmpty && amount > 0 && category.isNotEmpty) {
-                await _expenseService.updateExpense(expense.id, description, amount, category);
+                await _expenseService.updateExpense(
+                    expense.id, description, amount, category);
                 Navigator.pop(dialogContext, true);
               }
             },
@@ -186,22 +187,22 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkMode ? Colors.black : Colors.white;
-    final cardColor = isDarkMode ? Colors.grey[900] : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final secondaryTextColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textColor = colorScheme.onSurface;
+    final secondaryTextColor = colorScheme.onSurface.withOpacity(0.7);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: backgroundColor,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         title: const Text('Expense Tracker'),
-        backgroundColor: const Color.fromARGB(255, 44, 154, 244),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         elevation: 0,
       ),
       body: SafeArea(
@@ -212,69 +213,47 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Add Expense Form
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  color: cardColor,
+                  color: colorScheme.surface,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.03),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        TextField(
-                          controller: _descriptionController,
-                          style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
-                          decoration: InputDecoration(
-                            labelText: 'Description',
-                            labelStyle: TextStyle(color: secondaryTextColor),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                          ),
-                        ),
+                        buildTextField(
+                            controller: _descriptionController,
+                            label: 'Description',
+                            textColor: textColor,
+                            labelColor: secondaryTextColor),
                         SizedBox(height: screenHeight * 0.015),
-                        TextField(
-                          controller: _amountController,
-                          keyboardType: TextInputType.number,
-                          style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
-                          decoration: InputDecoration(
-                            labelText: 'Amount (₹)',
-                            labelStyle: TextStyle(color: secondaryTextColor),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                          ),
-                        ),
+                        buildTextField(
+                            controller: _amountController,
+                            label: 'Amount (₹)',
+                            textColor: textColor,
+                            labelColor: secondaryTextColor,
+                            keyboardType: TextInputType.number),
                         SizedBox(height: screenHeight * 0.015),
-                        TextField(
-                          controller: _categoryController,
-                          style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
-                          decoration: InputDecoration(
-                            labelText: 'Category',
-                            labelStyle: TextStyle(color: secondaryTextColor),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                          ),
-                        ),
+                        buildTextField(
+                            controller: _categoryController,
+                            label: 'Category',
+                            textColor: textColor,
+                            labelColor: secondaryTextColor),
                         SizedBox(height: screenHeight * 0.015),
                         ElevatedButton(
                           onPressed: _addExpense,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 39, 153, 240),
-                            foregroundColor: Colors.white,
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
+                            padding:
+                                EdgeInsets.symmetric(vertical: screenHeight * 0.02),
                             minimumSize: Size(double.infinity, 0),
                           ),
                           child: Text(
@@ -286,13 +265,16 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                     ),
                   ),
                 ),
+
                 SizedBox(height: screenHeight * 0.03),
+
+                // Expense Distribution Chart
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  color: cardColor,
+                  color: colorScheme.surface,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
@@ -307,98 +289,25 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.015),
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final chartSize = isLandscape
-                                ? min(constraints.maxWidth * 0.9, screenHeight * 0.7)
-                                : min(constraints.maxWidth * 0.9, screenHeight * 0.3);
-                            return Container(
-                              height: chartSize,
-                              width: constraints.maxWidth,
-                              alignment: Alignment.center,
-                              child: FutureBuilder<List<Expense>>(
-                                future: _expenseService.getExpenses(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  } else if (snapshot.hasError) {
-                                    return Center(
-                                      child: Text(
-                                        'Error loading chart: ${snapshot.error}',
-                                        style: TextStyle(color: secondaryTextColor, fontSize: screenWidth * 0.04),
-                                      ),
-                                    );
-                                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                    return Center(
-                                      child: Text(
-                                        'No expenses to display in chart',
-                                        style: TextStyle(color: secondaryTextColor, fontSize: screenWidth * 0.04),
-                                      ),
-                                    );
-                                  }
-                                  final categoryTotals = _calculateCategoryTotals(snapshot.data!);
-                                  if (categoryTotals.isEmpty) {
-                                    return Center(
-                                      child: Text(
-                                        'No categories to display',
-                                        style: TextStyle(color: secondaryTextColor, fontSize: screenWidth * 0.04),
-                                      ),
-                                    );
-                                  }
-                                  final colors = _generateColors(categoryTotals.length);
-                                  final sections = categoryTotals.entries.toList().asMap().entries.map((entry) {
-                                    final index = entry.key;
-                                    final mapEntry = entry.value;
-                                    return PieChartSectionData(
-                                      value: mapEntry.value,
-                                      title: '${mapEntry.key}\n₹${mapEntry.value.toStringAsFixed(2)}',
-                                      color: colors[index % colors.length],
-                                      radius: chartSize * 0.35,
-                                      titleStyle: TextStyle(
-                                        fontSize: isLandscape ? screenWidth * 0.025 : screenWidth * 0.03,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        shadows: const [
-                                          Shadow(
-                                            color: Colors.black54,
-                                            offset: Offset(1, 1),
-                                            blurRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      titlePositionPercentageOffset: 0.55,
-                                    );
-                                  }).toList();
-
-                                  return SizedBox(
-                                    width: chartSize,
-                                    height: chartSize,
-                                    child: PieChart(
-                                      PieChartData(
-                                        sections: sections,
-                                        sectionsSpace: 2,
-                                        centerSpaceRadius: chartSize * 0.15,
-                                        borderData: FlBorderData(show: false),
-                                        pieTouchData: PieTouchData(enabled: true),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
+                        buildPieChart(
+                            isLandscape: isLandscape,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth,
+                            secondaryTextColor: secondaryTextColor)
                       ],
                     ),
-                  ),
+                  ),                  
                 ),
+
                 SizedBox(height: screenHeight * 0.03),
+
+                // Expense List
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  color: cardColor,
+                  color: colorScheme.surface,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
@@ -413,110 +322,239 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.015),
-                        FutureBuilder<List<Expense>>(
-                          future: _expenseService.getExpenses(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                              return Center(
-                                child: Text(
-                                  'Error: ${snapshot.error}',
-                                  style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
-                                ),
-                              );
-                            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.account_balance_wallet,
-                                      size: screenWidth * 0.2,
-                                      color: secondaryTextColor,
-                                    ),
-                                    SizedBox(height: screenHeight * 0.015),
-                                    Text(
-                                      'No expenses yet.\nTrack your trip costs!',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: secondaryTextColor,
-                                        fontSize: screenWidth * 0.04,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            } else {
-                              final expenses = snapshot.data!;
-                              return Column(
-                                children: expenses.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final expense = entry.value;
-                                  return Padding(
-                                    padding: EdgeInsets.only(bottom: index < expenses.length - 1 ? screenHeight * 0.01 : 0),
-                                    child: Card(
-                                      elevation: 2,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      color: cardColor,
-                                      child: ListTile(
-                                        contentPadding: EdgeInsets.all(screenWidth * 0.04),
-                                        title: Text(
-                                          expense.description,
-                                          style: TextStyle(
-                                            fontSize: screenWidth * 0.04,
-                                            fontWeight: FontWeight.w500,
-                                            color: textColor,
-                                          ),
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '₹${expense.amount.toStringAsFixed(2)} - ${expense.category}',
-                                              style: TextStyle(
-                                                color: secondaryTextColor,
-                                                fontSize: screenWidth * 0.035,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Added: ${_formatDate(expense.timestamp)}',
-                                              style: TextStyle(
-                                                color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
-                                                fontSize: screenWidth * 0.03,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        onTap: () => _editExpenseDialog(expense),
-                                        trailing: IconButton(
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: Colors.red[400],
-                                            size: screenWidth * 0.06,
-                                          ),
-                                          onPressed: () => _confirmDelete(expense),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              );
-                            }
-                          },
-                        ),
+                        buildExpenseList(
+                            screenWidth: screenWidth,
+                            screenHeight: screenHeight,
+                            textColor: textColor
+                                , secondaryTextColor: secondaryTextColor),
                       ],
                     ),
-                  ),
+                  ),                  
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required Color textColor,
+    required Color labelColor,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: TextStyle(color: textColor),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: labelColor),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+      ),
+    );
+  }
+
+  Widget buildPieChart({
+    required bool isLandscape,
+    required double screenHeight,
+    required double screenWidth,
+    required Color secondaryTextColor,
+  }) {
+    return LayoutBuilder(builder: (context, constraints) {
+      final chartSize = isLandscape
+          ? min(constraints.maxWidth * 0.9, screenHeight * 0.7)
+          : min(constraints.maxWidth * 0.9, screenHeight * 0.3);
+      return Container(
+        height: chartSize,
+        width: constraints.maxWidth,
+        alignment: Alignment.center,
+        child: FutureBuilder<List<Expense>>(
+          future: _expenseService.getExpenses(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error loading chart: ${snapshot.error}',
+                  style: TextStyle(color: secondaryTextColor),
+                ),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child: Text(
+                  'No expenses to display in chart',
+                  style: TextStyle(color: secondaryTextColor),
+                ),
+              );
+            }
+
+            final categoryTotals = _calculateCategoryTotals(snapshot.data!);
+            if (categoryTotals.isEmpty) {
+              return Center(
+                child: Text(
+                  'No categories to display',
+                  style: TextStyle(color: secondaryTextColor),
+                ),
+              );
+            }
+
+            final colors = _generateColors(categoryTotals.length);
+            final sections = categoryTotals.entries
+                .toList()
+                .asMap()
+                .entries
+                .map((entry) {
+              final index = entry.key;
+              final mapEntry = entry.value;
+              return PieChartSectionData(
+                value: mapEntry.value,
+                title:
+                    '${mapEntry.key}\n₹${mapEntry.value.toStringAsFixed(2)}',
+                color: colors[index % colors.length],
+                radius: chartSize * 0.35,
+                titleStyle: TextStyle(
+                  fontSize: screenWidth * (isLandscape ? 0.025 : 0.03),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black54,
+                      offset: Offset(1, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                titlePositionPercentageOffset: 0.55,
+              );
+            }).toList();
+
+            return SizedBox(
+              width: chartSize,
+              height: chartSize,
+              child: PieChart(
+                PieChartData(
+                  sections: sections,
+                  sectionsSpace: 2,
+                  centerSpaceRadius: chartSize * 0.15,
+                  borderData: FlBorderData(show: false),
+                  pieTouchData: PieTouchData(enabled: true),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  Widget buildExpenseList({
+    required double screenWidth,
+    required double screenHeight,
+    required Color textColor,
+    required Color secondaryTextColor,
+  }) {
+    return FutureBuilder<List<Expense>>(
+      future: _expenseService.getExpenses(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Error: ${snapshot.error}',
+              style: TextStyle(color: textColor),
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  size: screenWidth * 0.2,
+                  color: secondaryTextColor,
+                ),
+                SizedBox(height: screenHeight * 0.015),
+                Text(
+                  'No expenses yet.\nTrack your trip costs!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: secondaryTextColor,
+                    fontSize: screenWidth * 0.04,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          final expenses = snapshot.data!;
+          return Column(
+            children: expenses.asMap().entries.map((entry) {
+              final index = entry.key;
+              final expense = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(
+                    bottom: index < expenses.length - 1 ? screenHeight * 0.01 : 0),
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  color: Theme.of(context).colorScheme.surface,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(screenWidth * 0.04),
+                    title: Text(
+                      expense.description,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        fontWeight: FontWeight.w500,
+                        color: textColor,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '₹${expense.amount.toStringAsFixed(2)} - ${expense.category}',
+                          style: TextStyle(
+                            color: secondaryTextColor,
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
+                        Text(
+                          'Added: ${_formatDate(expense.timestamp)}',
+                          style: TextStyle(
+                            color: secondaryTextColor.withOpacity(0.8),
+                            fontSize: screenWidth * 0.03,
+                          ),
+                        ),
+                      ],
+                    ),
+                    onTap: () => _editExpenseDialog(expense),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.red[400],
+                        size: screenWidth * 0.06,
+                      ),
+                      onPressed: () => _confirmDelete(expense),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          );
+        }
+      },
     );
   }
 }
