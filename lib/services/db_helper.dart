@@ -53,6 +53,26 @@ class DatabaseHelper {
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
+
+    // Add destination_ideas table for the destination ideas service
+    await db.execute('''
+      CREATE TABLE destination_ideas (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        country TEXT,
+        category TEXT,
+        tags TEXT,
+        best_season TEXT,
+        description TEXT,
+        image_url TEXT,
+        lat REAL,
+        lng REAL,
+        current_weather TEXT,
+        score REAL DEFAULT 0,
+        is_saved INTEGER DEFAULT 0,
+        user_notes TEXT
+      );
+    ''');
   }
 
   // Hash password using SHA256

@@ -147,7 +147,7 @@ class _NotesScreenState extends State<NotesScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             filled: true,
-                            fillColor: colorScheme.surfaceVariant,
+                            fillColor: colorScheme.surfaceContainerHighest,
                           ),
                           style: TextStyle(color: colorScheme.onSurface),
                           cursorColor: colorScheme.primary,

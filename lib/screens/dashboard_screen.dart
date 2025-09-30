@@ -11,7 +11,7 @@ class DashboardScreen extends StatelessWidget {
         icon: Icons.explore,
         color: Colors.deepPurple,
         onTap: () {
-          Navigator.pushNamed(context, '/destination');
+          Navigator.pushNamed(context, '/destination_ideas');
         },
       ),
       // _DashboardItem(

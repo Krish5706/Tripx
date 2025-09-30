@@ -13,12 +13,21 @@ import 'package:tripx/screens/trip_details/expenses.dart';
 import 'package:tripx/screens/trip_details/schedule.dart'; 
 import 'package:tripx/screens/trip_selection_screen.dart'; 
 import 'package:tripx/screens/create_trip_screen.dart'; 
+import 'package:tripx/screens/destination_ideas_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Load environment variables from .env
+  // await dotenv.load(fileName: ".env");
+
+  // ✅ Initialize SQLite FFI for desktop
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     sqfliteFfiInit();
     DatabaseHelper.initFfi();
   }
+
   runApp(const MyApp());
 }
 
@@ -60,25 +69,21 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/settings': (context) => SettingsScreen(
-          currentThemeMode: _themeMode,
-          onThemeChanged: _updateThemeMode,
-        ),
-        // Future screens can be added below
-        // '/destination': (context) => const DestinationIdeasScreen(),
-        // '/trip_planner': (context) => const CreateTripScreen(),
+              currentThemeMode: _themeMode,
+              onThemeChanged: _updateThemeMode,
+            ),
+        '/destination_ideas': (context) => const DestinationIdeasScreen(),
         '/trip_selection': (context) => const TripSelectionScreen(),
         '/create_trip': (context) => const CreateTripScreen(),
         '/schedule': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           if (args == null) {
-            // Fallback if no arguments provided - redirect to dashboard
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.pushReplacementNamed(context, '/dashboard');
             });
             return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
+              body: Center(child: CircularProgressIndicator()),
             );
           }
           return ScheduleScreen(
@@ -88,7 +93,7 @@ class _MyAppState extends State<MyApp> {
         },
         '/packing_list': (context) => const PackingListScreen(),
         '/notes': (context) => const NotesScreen(),
-        '/expenses': (context) => const ExpenseScreen(), // Added route
+        '/expenses': (context) => const ExpenseScreen(),
       },
     );
   }

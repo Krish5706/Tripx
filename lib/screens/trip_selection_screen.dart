@@ -353,7 +353,7 @@ class _TripSelectionScreenState extends State<TripSelectionScreen>
                 ? 'No trips found'
                 : _selectedFilter == 'all' 
                     ? 'No trips yet'
-                    : 'No ${_selectedFilter} trips',
+                    : 'No $_selectedFilter trips',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,

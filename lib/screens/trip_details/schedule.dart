@@ -680,7 +680,7 @@ class _ScheduleItemDialogState extends State<ScheduleItemDialog> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _category,
+                              initialValue: _category,
                               decoration: const InputDecoration(
                                 labelText: 'Category',
                               ),
@@ -699,7 +699,7 @@ class _ScheduleItemDialogState extends State<ScheduleItemDialog> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _priority,
+                              initialValue: _priority,
                               decoration: const InputDecoration(
                                 labelText: 'Priority',
                               ),
@@ -783,8 +783,9 @@ class _ScheduleItemDialogState extends State<ScheduleItemDialog> {
           );
           if (isStart) {
             _startTime = newDateTime;
-            if (_startTime.isAfter(_endTime))
+            if (_startTime.isAfter(_endTime)) {
               _endTime = _startTime.add(const Duration(hours: 1));
+            }
           } else {
             _endTime = newDateTime;
           }
