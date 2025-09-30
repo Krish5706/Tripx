@@ -198,7 +198,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('Expense Tracker'),
         backgroundColor: colorScheme.primary,
@@ -355,7 +355,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
         labelStyle: TextStyle(color: labelColor),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: true,
-        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
     );
   }

@@ -618,7 +618,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 DropdownButtonFormField<String>(
-                  value: selectedCategory,
+                  initialValue: selectedCategory,
                   decoration: InputDecoration(
                     labelText: 'Category',
                     border: OutlineInputBorder(
@@ -664,7 +664,7 @@ class _PackingListScreenState extends State<PackingListScreen>
                     SizedBox(width: MediaQuery.of(context).size.width * 0.04),
                     Expanded(
                       child: DropdownButtonFormField<Priority>(
-                        value: priority,
+                        initialValue: priority,
                         decoration: InputDecoration(
                           labelText: 'Priority',
                           border: OutlineInputBorder(

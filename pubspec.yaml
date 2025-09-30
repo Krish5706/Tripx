@@ -1,10 +1,8 @@
 name: tripx
 description: "A Flutter travel planning app that helps users organize their trips easily with features like destination ideas, trip planner, daily schedule, packing list, travel notes, and expense tracker."
 
-# Prevent accidental publishing
-publish_to: 'none'
+publish_to: 'none' # Prevent accidental publishing
 
-# Version and build number
 version: 1.0.0+1
 
 environment:
@@ -13,21 +11,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  http: ^1.2.2              # For API calls
+  flutter_dotenv: ^5.2.1    # For securely loading API keys
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.0
   provider: ^6.0.5
-  intl: ^0.18.1  # Matches your specified version
+  intl: ^0.18.1
   shared_preferences: ^2.2.2
   cupertino_icons: ^1.0.8
   image_picker: ^1.1.2
   path_provider: ^2.0.15
   fl_chart: ^0.68.0
-
-  # SQLite Database
-  sqflite: ^2.3.3+1  # Matches your specified version
-  path: ^1.9.0  # Matches your specified version
-  sqflite_common_ffi: ^2.3.0  # For desktop debugging, optional
-
-  # Utilities
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  sqflite_common_ffi: ^2.3.0
   crypto: ^3.0.0
 
 dev_dependencies:
@@ -38,14 +35,14 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Assets (uncomment and update paths as needed)
   # assets:
   #   - assets/images/
   #   - assets/icons/
   #   - assets/animations/
   #   - assets/data/
+  #   - .env   # 👈 Required for flutter_dotenv to load API keys
 
-  # Fonts (uncomment and update as needed)
+  # Fonts (optional, you can uncomment if needed)
   # fonts:
   #   - family: Poppins
   #     fonts:
