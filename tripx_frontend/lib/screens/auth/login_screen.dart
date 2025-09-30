@@ -46,9 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
           // --- SAVE THE TOKEN SECURELY ---
           await _storageService.saveToken(result['token']);
           
+          if (!mounted) return;
           // Navigate to the dashboard
           Navigator.of(context).pushReplacementNamed('/dashboard');
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login failed: ${result['message']}'),

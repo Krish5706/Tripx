@@ -112,8 +112,8 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
               'Save',
               style: TextStyle(
                 fontSize: 16,
-                color: _isLoading 
-                  ? theme.colorScheme.onSurface.withOpacity(0.38)
+                color: _isLoading
+                  ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
                   : theme.colorScheme.primary,
               ),
             ),
@@ -191,7 +191,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                         bottom: MediaQuery.of(context).padding.bottom + 24.0,
                       ),
                       child: ElevatedButton.icon(
-                        icon: _isLoading 
+                        icon: _isLoading
                           ? SizedBox(
                               width: 20,
                               height: 20,
@@ -212,7 +212,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                         onPressed: _isLoading ? null : _createTrip,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
-                          disabledBackgroundColor: theme.colorScheme.primary.withOpacity(0.12),
+                          disabledBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -236,11 +236,11 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       width: double.infinity,
-      color: theme.colorScheme.primary.withOpacity(0.05),
+      color: theme.colorScheme.primary.withValues(alpha: 0.05),
       child: Column(
         children: [
-          Icon(Icons.flight_takeoff, 
-            size: 40, 
+          Icon(Icons.flight_takeoff,
+            size: 40,
             color: theme.colorScheme.primary
           ),
           const SizedBox(height: 8),
@@ -257,7 +257,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
             'Fill in the details below to create your dream vacation',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -291,7 +291,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
             ),
             Divider(
               height: 24,
-              color: theme.colorScheme.onSurface.withOpacity(0.1),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
             ),
             child,
           ],
@@ -320,13 +320,13 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -359,7 +359,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
           padding: const EdgeInsets.only(top: 8.0),
           child: Row(
             children: [
-              Icon(Icons.info_outline, 
+              Icon(Icons.info_outline,
                 color: theme.colorScheme.primary,
                 size: 18
               ),
@@ -386,18 +386,18 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
           decoration: InputDecoration(
             labelText: 'Planned Activities',
             labelStyle: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -414,7 +414,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                 : _plannedActivities.join(', '),
             style: TextStyle(
               color: _plannedActivities.isEmpty
-                  ? theme.colorScheme.onSurface.withOpacity(0.6)
+                  ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
                   : theme.colorScheme.onSurface,
             ),
           ),
@@ -447,7 +447,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                 _toggleActivity(activity);
               },
               selectedColor: theme.colorScheme.primaryContainer,
-              backgroundColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+              backgroundColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

@@ -24,11 +24,11 @@ exports.updateMe = async (req, res) => {
       phone: req.body.phone,
       bio: req.body.bio,
     };
-    
-    // --- THIS IS THE CRUCIAL FIX ---
-    // This 'if' statement checks if a file was successfully uploaded by the middleware.
-    // If it was, it adds the file's path to the object that will be saved in the database.
-    if (req.file) {
+
+    // Handle profile picture removal
+    if (req.body.removeImage === 'true') {
+      filteredBody.profilePicture = null;
+    } else if (req.file) {
       filteredBody.profilePicture = req.file.path;
     }
 

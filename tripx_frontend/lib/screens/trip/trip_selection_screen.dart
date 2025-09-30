@@ -122,7 +122,6 @@ class _TripSelectionScreenState extends State<TripSelectionScreen> {
         tempTrips = tempTrips.where((trip) => trip.endDate.isBefore(now)).toList();
         break;
       case TripStatusFilter.all:
-      default:
         break;
     }
 
@@ -171,7 +170,6 @@ class _TripSelectionScreenState extends State<TripSelectionScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Your Trips', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                // TODO: Show trip statistics
               ],
             ),
           ),
@@ -597,7 +595,7 @@ class _StatCard extends StatelessWidget {
               height: 40, // Reduced from 48
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
               ),
               child: Icon(icon, size: 20, color: color), // Reduced from 24
             ),

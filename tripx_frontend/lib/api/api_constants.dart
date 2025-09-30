@@ -1,7 +1,6 @@
 class ApiConstants {
-  // For Android Emulator, use 10.0.2.2 to connect to localhost on the host machine.
   // For physical devices, replace with your computer's actual IP address on the same Wi-Fi network.
-  static const String _serverRoot = 'http://10.236.176.96:5000';
+  static const String _serverRoot = 'http://10.44.144.180:5000';
   static const String baseUrl = '$_serverRoot/api';
 
   // Static files base URL (for images, etc.)

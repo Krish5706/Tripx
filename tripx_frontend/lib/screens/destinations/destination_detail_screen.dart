@@ -71,8 +71,8 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          colorScheme.surface.withOpacity(0.9),
-                          colorScheme.surface.withOpacity(0.1),
+                          colorScheme.surface.withValues(alpha: 0.9),
+                          colorScheme.surface.withValues(alpha: 0.1),
                         ],
                       ),
                     ),
