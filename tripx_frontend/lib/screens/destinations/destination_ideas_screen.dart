@@ -46,7 +46,6 @@ class _DestinationIdeasScreenState extends State<DestinationIdeasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -195,8 +194,8 @@ class _DestinationCard extends StatelessWidget {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          colorScheme.surface.withOpacity(0.9),
-                          colorScheme.surface.withOpacity(0.1),
+                          colorScheme.surface.withValues(alpha: 0.9),
+                          colorScheme.surface.withValues(alpha: 0.1),
                         ],
                       ),
                     ),

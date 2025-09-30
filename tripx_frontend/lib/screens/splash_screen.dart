@@ -40,6 +40,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Check for a saved token
     final token = await _storageService.readToken();
 
+    if (!mounted) return;
+
     if (token != null) {
       // If token exists, go to dashboard
       Navigator.of(context).pushReplacementNamed('/dashboard');

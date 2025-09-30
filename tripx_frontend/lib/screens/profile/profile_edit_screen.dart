@@ -1,5 +1,3 @@
-// File: lib/screens/profile/profile_edit_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:tripx_frontend/api/api_constants.dart';
 import 'package:tripx_frontend/repositories/user_repository.dart';
@@ -20,20 +18,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _bioController = TextEditingController();
   File? _profileImageFile;
+  String? _currentProfilePicture;
+  bool _removeImage = false;
   final UserRepository _userRepository = UserRepository();
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _currentProfilePicture = widget.initialUser?.profilePicture;
     if (widget.initialUser != null) {
       _nameController.text = widget.initialUser!.name;
       _emailController.text = widget.initialUser!.email;
-      _phoneController.text = widget.initialUser!.phone ?? '';
-      _bioController.text = widget.initialUser!.bio ?? '';
     }
   }
 
@@ -41,8 +38,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
-    _bioController.dispose();
     super.dispose();
   }
 
@@ -52,6 +47,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (image != null) {
       setState(() {
         _profileImageFile = File(image.path);
+        _removeImage = false;
       });
     }
   }
@@ -66,9 +62,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         await _userRepository.updateUser(
           name: _nameController.text,
           email: _emailController.text,
-          phone: _phoneController.text,
-          bio: _bioController.text,
+          phone: null,
+          bio: null,
           profileImage: _profileImageFile,
+          removeImage: _removeImage,
         );
 
         if (!mounted) return;
@@ -139,24 +136,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone (Optional)',
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _bioController,
-                decoration: const InputDecoration(
-                  labelText: 'Bio',
-                  prefixIcon: Icon(Icons.short_text),
-                ),
-                maxLines: 3,
-              ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _saveProfile,
@@ -186,34 +165,47 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     ImageProvider? backgroundImage;
     if (_profileImageFile != null) {
       backgroundImage = FileImage(_profileImageFile!);
-    } else if (widget.initialUser?.profilePicture != null &&
-        widget.initialUser!.profilePicture!.isNotEmpty) {
-      backgroundImage =
-          NetworkImage(_constructImageUrl(widget.initialUser!.profilePicture!));
+    } else if (_currentProfilePicture != null && _currentProfilePicture!.isNotEmpty) {
+      backgroundImage = NetworkImage(_constructImageUrl(_currentProfilePicture!));
     }
 
     return Center(
-      child: Stack(
+      child: Column(
         children: [
-          CircleAvatar(
-            radius: 60,
-            backgroundImage: backgroundImage,
-            child: backgroundImage == null
-                ? const Icon(Icons.person, size: 60)
-                : null,
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Theme.of(context).primaryColor,
-              child: IconButton(
-                icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                onPressed: _pickImage,
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundImage: backgroundImage,
+                child: backgroundImage == null
+                    ? const Icon(Icons.person, size: 60)
+                    : null,
               ),
-            ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  child: IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                    onPressed: _pickImage,
+                  ),
+                ),
+              ),
+            ],
           ),
+          if (backgroundImage != null)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _profileImageFile = null;
+                  _currentProfilePicture = null;
+                  _removeImage = true;
+                });
+              },
+              child: const Text('Remove Photo'),
+            ),
         ],
       ),
     );
@@ -224,8 +216,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       return path;
     }
     // Normalize path: replace backslashes and remove leading slashes
-    String normalizedPath =
-        path.replaceAll(r'\', '/').replaceAll(r'public/', '');
+    String normalizedPath = path.replaceAll(r'\', '/').replaceAll(r'public/', '');
     if (normalizedPath.startsWith('/')) {
       normalizedPath = normalizedPath.substring(1);
     }

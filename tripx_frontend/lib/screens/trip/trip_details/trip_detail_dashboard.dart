@@ -33,7 +33,7 @@ class TripDetailDashboard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: theme.colorScheme.shadow.withOpacity(0.05),
+                      color: theme.colorScheme.shadow.withValues(alpha: 0.05),
                       spreadRadius: 2,
                       blurRadius: 10,
                       offset: const Offset(0, 4),
@@ -161,7 +161,7 @@ class _FeatureCard extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                 ),
                 child: Center(
                   child: Icon(icon, size: 30, color: color),

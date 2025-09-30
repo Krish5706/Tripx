@@ -441,15 +441,17 @@ class _AddScheduleDialogState extends State<_AddScheduleDialog> {
           endTime: _endTime,
         );
       }
+      if (!mounted) return;
       widget.onSave();
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed to save: $e'), backgroundColor: Colors.red),
-        );
+        Navigator.of(context).pop();
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Failed to save: $e'), backgroundColor: Colors.red),
+      );
     }
 
     setState(() => _isLoading = false);
@@ -677,7 +679,7 @@ class _ScheduleListItem extends StatelessWidget {
               color: WidgetStateProperty.resolveWith<Color>(
                   (Set<WidgetState> states) {
                 return _getColorForPriority(item.priority, theme)
-                    .withOpacity(0.15);
+                    .withValues(alpha: 0.15);
               }),
               side: BorderSide(
                   color: _getColorForPriority(item.priority, theme), width: 1),

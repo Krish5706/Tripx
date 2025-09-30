@@ -94,13 +94,16 @@ class _NotesScreenState extends State<NotesScreen> {
           ),
           FilledButton.tonal(
             onPressed: () async {
+              final localContext = context;
               Navigator.of(dialogContext).pop();
               await _repository.deleteNote(noteId);
               if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Note deleted')),
-              );
               _refreshNotes();
+              if (mounted) {
+                ScaffoldMessenger.of(localContext).showSnackBar(
+                  const SnackBar(content: Text('Note deleted')),
+                );
+              }
             },
             child: const Text('Delete'),
           ),
@@ -215,8 +218,8 @@ class NoteCard extends StatelessWidget {
 
     // --- Dynamically determine text color based on background brightness ---
     final isColorDark = ThemeData.estimateBrightnessForColor(color) == Brightness.dark;
-    final mainTextColor = isColorDark ? Colors.white.withOpacity(0.90) : Colors.black.withOpacity(0.87);
-    final secondaryTextColor = isColorDark ? Colors.white.withOpacity(0.70) : Colors.black.withOpacity(0.54);
+    final mainTextColor = isColorDark ? Colors.white.withValues(alpha: 0.90) : Colors.black.withValues(alpha: 0.87);
+    final secondaryTextColor = isColorDark ? Colors.white.withValues(alpha: 0.70) : Colors.black.withValues(alpha: 0.54);
 
 
     return Transform.rotate(
