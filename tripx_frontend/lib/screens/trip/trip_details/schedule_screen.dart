@@ -656,7 +656,7 @@ class _ScheduleListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(item.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onSurface)),
                   const SizedBox(height: 4),
@@ -666,7 +666,7 @@ class _ScheduleListItem extends StatelessWidget {
                           size: 14, color: theme.colorScheme.onSurfaceVariant),
                       const SizedBox(width: 4),
                       Text(timeRange,
-                          style: theme.textTheme.bodyMedium
+                          style: theme.textTheme.bodySmall
                               ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                     ],
                   ),
@@ -683,7 +683,7 @@ class _ScheduleListItem extends StatelessWidget {
               }),
               side: BorderSide(
                   color: _getColorForPriority(item.priority, theme), width: 1),
-              labelStyle: theme.textTheme.labelMedium?.copyWith(
+              labelStyle: theme.textTheme.labelSmall?.copyWith(
                   color: _getColorForPriority(item.priority, theme),
                   fontWeight: FontWeight.bold),
               shape: RoundedRectangleBorder(
