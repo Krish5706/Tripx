@@ -1,1 +1,0 @@
-- [x] Reduce font sizes in _ScheduleListItem widget for schedule item title, time range, and priority chip label to make them smaller in the display boxes.
