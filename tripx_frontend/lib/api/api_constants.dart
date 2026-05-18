@@ -1,6 +1,7 @@
 class ApiConstants {
   // For physical devices, replace with your computer's actual IP address on the same Wi-Fi network.
-  static const String _serverRoot = 'https://tripx-jnjnyhfqr-krish5706s-projects.vercel.app';
+  static const String _serverRoot = 'https://tripx-qvtcio1e3-krish5706s-projects.vercel.app';
+  // http://10.19.160.159:5000
   static const String baseUrl = '$_serverRoot/api';
 
   // Static files base URL (for images, etc.)

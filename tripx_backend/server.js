@@ -6,56 +6,96 @@ const dns = require('dns');
 
 dotenv.config();
 
-const requiredEnv = ['MONGO_URI', 'JWT_SECRET', 'JWT_EXPIRES_IN'];
-const missingEnv = requiredEnv.filter((key) => !process.env[key]);
-if (missingEnv.length) {
-  const errorMessage = `Missing required environment variables: ${missingEnv.join(', ')}`;
-  console.error(errorMessage);
-  throw new Error(errorMessage);
-}
-
 const app = express();
 
-// --- MongoDB Connection Fixes ---
-// Force Node to use Google DNS (helps with SRV lookups)
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+// ======================================================
+// Middleware
+// ======================================================
 
-// Disable Mongoose buffering (fail fast if connection fails)
-mongoose.set('bufferCommands', false);
-
-// --- Middleware ---
 app.use(cors());
 app.use(express.json());
 
-let isConnected = false;
+// ======================================================
+// DNS Fix for MongoDB Atlas SRV Issues
+// ======================================================
+
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
+// ======================================================
+// MongoDB Configuration
+// ======================================================
+
+mongoose.set('bufferCommands', false);
+
+let cachedConnection = false;
 
 const connectDB = async () => {
-  if (isConnected) return;
   try {
+    // Already connected
+    if (
+      cachedConnection ||
+      mongoose.connection.readyState === 1
+    ) {
+      console.log('MongoDB already connected.');
+      return;
+    }
+
+    // Environment variable check
+    if (!process.env.MONGO_URI) {
+      throw new Error(
+        'MONGO_URI is missing in environment variables'
+      );
+    }
+
+    console.log('Connecting to MongoDB...');
+
     await mongoose.connect(process.env.MONGO_URI, {
-      family: 4, // Force IPv4 to avoid SRV query issues
-      serverSelectionTimeoutMS: 10000, // Fail fast if MongoDB not reachable
+      family: 4,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
     });
-    isConnected = true;
+
+    cachedConnection = true;
+
     console.log('MongoDB connected successfully.');
   } catch (error) {
-    console.error('MongoDB connection failed:', error.message);
-    throw error;
+    cachedConnection = false;
+
+    console.error('MongoDB connection failed:');
+    console.error(error);
   }
 };
 
-const mongoConnection = connectDB();
+// ======================================================
+// Database Connection Middleware (Important for Vercel)
+// ======================================================
 
 app.use(async (req, res, next) => {
-  try {
-    await mongoConnection;
-    next();
-  } catch (error) {
-    res.status(500).json({ status: 'fail', message: 'Database connection failed.' });
-  }
+  await connectDB();
+  next();
 });
 
-// --- Import Routes ---
+// ======================================================
+// MongoDB Event Listeners
+// ======================================================
+
+mongoose.connection.on('connected', () => {
+  console.log('Mongoose connected.');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('Mongoose disconnected.');
+});
+
+// ======================================================
+// Import Routes
+// ======================================================
+
 const authRoutes = require('./src/api/routes/auth.routes');
 const userRoutes = require('./src/api/routes/user.routes');
 const tripRoutes = require('./src/api/routes/trip.routes');
@@ -65,7 +105,10 @@ const expenseRoutes = require('./src/api/routes/expense.routes');
 const noteRoutes = require('./src/api/routes/note.routes');
 const destinationRoutes = require('./src/api/routes/destination.routes');
 
-// --- Routes ---
+// ======================================================
+// API Routes
+// ======================================================
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/trips', tripRoutes);
@@ -75,16 +118,182 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/destinations', destinationRoutes);
 
-// --- Test Route ---
+// ======================================================
+// Root Route
+// ======================================================
+
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the TripX Backend API!' });
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to the TripX Backend API!',
+    timestamp: new Date().toISOString(),
+  });
 });
 
-if (require.main === module) {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// ======================================================
+// Health Check Route
+// ======================================================
+
+app.get('/health', async (req, res) => {
+  try {
+    const state = mongoose.connection.readyState;
+
+    let databaseStatus = 'unknown';
+
+    switch (state) {
+      case 0:
+        databaseStatus = 'disconnected';
+        break;
+
+      case 1:
+        databaseStatus = 'connected';
+        break;
+
+      case 2:
+        databaseStatus = 'connecting';
+        break;
+
+      case 3:
+        databaseStatus = 'disconnecting';
+        break;
+    }
+
+    res.status(200).json({
+      success: true,
+      server: 'running',
+      database: databaseStatus,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+// ======================================================
+// Database Status Route
+// ======================================================
+
+app.get('/db-status', async (req, res) => {
+
+  try {
+
+    const state = mongoose.connection.readyState;
+
+    let databaseStatus = 'unknown';
+
+    switch (state) {
+
+      case 0:
+        databaseStatus = 'disconnected';
+        break;
+
+      case 1:
+        databaseStatus = 'connected';
+        break;
+
+      case 2:
+        databaseStatus = 'connecting';
+        break;
+
+      case 3:
+        databaseStatus = 'disconnecting';
+        break;
+    }
+
+    // Fail if not connected
+    if (state !== 1) {
+
+      return res.status(500).json({
+        success: false,
+        database: databaseStatus,
+        message: 'MongoDB is NOT connected'
+      });
+
+    }
+
+    // Real DB ping
+    await mongoose.connection.db.admin().ping();
+
+    res.status(200).json({
+      success: true,
+      database: databaseStatus,
+      message: 'MongoDB connected successfully'
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      database: 'failed',
+      error: error.message
+    });
+
+  }
+
+});
+
+app.get('/mongo-debug', async (req, res) => {
+
+  try {
+
+    await mongoose.connect(process.env.MONGO_URI, {
+      family: 4,
+      serverSelectionTimeoutMS: 10000,
+    });
+
+    res.json({
+      success: true,
+      message: 'MongoDB direct connection success'
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      fullError: JSON.stringify(error, null, 2)
+    });
+
+  }
+
+});
+
+// ======================================================
+// 404 Route Handler
+// ======================================================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+    path: req.originalUrl,
   });
-}
+});
+
+// ======================================================
+// Global Error Handler
+// ======================================================
+
+app.use((err, req, res, next) => {
+  console.error('Global Server Error:');
+  console.error(err.stack);
+
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error',
+    error:
+      process.env.NODE_ENV === 'development'
+        ? err.message
+        : undefined,
+  });
+});
+
+// ======================================================
+// Export App for Vercel
+// ======================================================
 
 module.exports = app;
