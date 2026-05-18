@@ -1,6 +1,7 @@
 // File: lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tripx_frontend/providers/theme_provider.dart';
@@ -24,6 +25,9 @@ import 'package:tripx_frontend/screens/trip/trip_selection_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔹 Load environment variables from .env
+  await dotenv.load(fileName: '.env');
 
   // 🔹 Load saved theme preference
   final prefs = await SharedPreferences.getInstance();

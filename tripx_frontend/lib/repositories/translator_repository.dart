@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TranslatorRepository {
   final Dio _dio = Dio();
@@ -9,11 +10,13 @@ class TranslatorRepository {
     required String sourceLanguage,
     required String targetLanguage,
   }) async {
-    // In this environment, the API key is handled automatically.
-    // We leave this empty.
-    const String apiKey = "AIzaSyAFdkNdDcQcS0CotfQ2J525059HmvX4hcQ"; 
+    final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    if (apiKey.isEmpty) {
+      throw Exception('Missing GEMINI_API_KEY in .env');
+    }
 
-    const url ='https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$apiKey';
+    final url =
+        'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$apiKey';
 
     // --- REFINED PROMPT ---
     // This prompt is very specific to ensure the AI only returns the translation.

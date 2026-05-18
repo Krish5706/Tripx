@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tripx_frontend/api/api_constants.dart';
 import 'package:tripx_frontend/models/destination.dart';
 import 'package:tripx_frontend/utils/secure_storage_service.dart';
@@ -36,9 +37,11 @@ class DestinationRepository {
   // --- UPDATED: Fetches rich details from the Gemini API with a better prompt ---
   Future<String> getDestinationDetails(
       String destinationName, String country) async {
-    const apiKey =
-        "AIzaSyAFdkNdDcQcS0CotfQ2J525059HmvX4hcQ"; // Handled automatically
-    const url =
+    final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    if (apiKey.isEmpty) {
+      throw Exception('Missing GEMINI_API_KEY in .env');
+    }
+    final url =
         'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$apiKey';
 
     // --- THIS IS THE FIX ---
